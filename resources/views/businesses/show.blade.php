@@ -2,18 +2,18 @@
 
 @section('content')
 <div class="bg-brand-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
-        <nav class="flex text-xs font-bold text-gray-400 mb-8 gap-2 uppercase tracking-widest">
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-10 sm:px-6 lg:px-8">
+        <nav class="flex text-xs font-bold text-gray-400 mb-4 md:mb-8 gap-2 uppercase tracking-widest flex-wrap">
             <a href="{{ route('home') }}" class="hover:text-brand-green transition-colors">الرئيسية</a>
             <span class="opacity-30">/</span>
             <a href="#" class="hover:text-brand-green transition-colors">{{ $business->category->name }}</a>
             <span class="opacity-30">/</span>
-            <span class="text-brand-green">{{ $business->name }}</span>
+            <span class="text-brand-green truncate">{{ $business->name }}</span>
         </nav>
 
-        <div class="flex flex-col md:flex-row justify-between items-start gap-8">
-            <div class="flex items-center gap-8">
-                <div class="w-24 h-24 md:w-36 md:h-36 bg-white rounded-3xl overflow-hidden border-4 border-white shadow-xl relative group">
+        <div class="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-8 w-full">
+                <div class="w-20 h-20 md:w-36 md:h-36 bg-white rounded-2xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-white shadow-xl relative group flex-shrink-0">
                     @if($business->logo)
                         <img src="{{ asset('storage/' . $business->logo) }}" class="w-full h-full object-cover">
                     @else
@@ -21,27 +21,27 @@
                     @endif
                     <div class="absolute inset-0 bg-brand-green/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </div>
-                <div>
-                    <div class="flex items-center gap-3 mb-3">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3 mb-2 md:mb-3">
                          <span class="bg-brand-green text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">موثق</span>
                          <span class="text-xs font-bold text-gray-400">{{ $business->category->name }}</span>
                     </div>
-                    <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">{{ $business->name }}</h1>
-                    <div class="flex items-center gap-6 text-sm font-bold">
+                    <h1 class="text-2xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-2 md:mb-4 tracking-tight break-words">{{ $business->name }}</h1>
+                    <div class="flex flex-wrap items-center gap-3 md:gap-6 text-sm font-bold">
                         <div class="flex items-center gap-1.5 text-yellow-500">
-                            <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            <svg class="w-4 h-4 md:w-5 md:h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
                             <span class="text-gray-900">{{ number_format($business->averageRating(), 1) }}</span>
-                            <span class="text-gray-400 font-medium">({{ $business->reviews->count() }} تقييم)</span>
+                            <span class="text-gray-400 font-medium text-xs">({{ $business->reviews->count() }})</span>
                         </div>
-                        <div class="text-gray-300">|</div>
+                        <div class="hidden sm:block text-gray-300">|</div>
                         <div class="flex items-center gap-1.5 text-brand-green">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                            <span class="text-gray-900">{{ $business->subArea?->name ?? 'غير محدد' }}</span>
+                            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                            <span class="text-gray-900 text-xs md:text-sm">{{ $business->subArea?->name ?? 'غير محدد' }}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="flex gap-4 w-full md:w-auto mt-6 md:mt-0" 
+            <div class="flex gap-3 md:gap-4 w-full md:w-auto mt-4 md:mt-0" 
                  x-data="{ 
                     isFavorite: {{ auth()->check() && auth()->user()->favorites->contains($business->id) ? 'true' : 'false' }},
                     toggleFavorite() {
@@ -60,26 +60,27 @@
                         .catch(err => console.error(err));
                     }
                  }">
-                <button class="flex-grow md:flex-none flex items-center justify-center gap-3 bg-brand-green text-white font-bold py-4 px-10 rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-brand-green/20">
+                <button class="flex-grow md:flex-none flex items-center justify-center gap-2 md:gap-3 bg-brand-green text-white font-bold py-3 md:py-4 px-6 md:px-10 rounded-xl md:rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-brand-green/20 text-sm md:text-base">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                    اتصل الآن
+                    <span class="hidden sm:inline">اتصل الآن</span>
+                    <span class="sm:hidden">اتصل</span>
                 </button>
                 <button @click="toggleFavorite" 
                         :class="isFavorite ? 'bg-red-50 text-red-500 border-red-100' : 'bg-white text-gray-400 border-gray-100'"
-                        class="p-4 border rounded-2xl hover:bg-red-50 transition-all group active:scale-90">
-                    <svg class="w-6 h-6" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        class="p-3 md:p-4 border rounded-xl md:rounded-2xl hover:bg-red-50 transition-all group active:scale-90">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+<div class="max-w-7xl mx-auto px-4 py-8 md:py-16 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-12">
         <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-12">
+        <div class="lg:col-span-2 space-y-6 md:space-y-12 order-2 lg:order-1">
             <!-- Gallery -->
-            <div class="main-gallery relative rounded-[2.5rem] h-[30rem] overflow-hidden shadow-2xl group border-8 border-white">
+            <div class="main-gallery relative rounded-2xl md:rounded-[2.5rem] h-64 md:h-[30rem] overflow-hidden shadow-2xl group border-4 md:border-8 border-white">
                  @if($business->images && count($business->images) > 0)
                      <img src="{{ asset('storage/' . $business->images[0]) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000">
                  @elseif($business->logo)
@@ -97,31 +98,31 @@
 
             <!-- Image Thumbnails -->
             @if($business->images && count($business->images) > 1)
-            <div class="grid grid-cols-4 gap-4">
+            <div class="grid grid-cols-4 gap-2 md:gap-4">
                 @foreach($business->images as $index => $image)
-                <div class="relative rounded-xl overflow-hidden cursor-pointer group" onclick="document.querySelector('.main-gallery img').src = this.querySelector('img').src">
-                    <img src="{{ asset('storage/' . $image) }}" alt="Image {{ $index + 1 }}" class="w-full h-24 object-cover group-hover:scale-110 transition-transform duration-300">
+                <div class="relative rounded-lg md:rounded-xl overflow-hidden cursor-pointer group" onclick="document.querySelector('.main-gallery img').src = this.querySelector('img').src">
+                    <img src="{{ asset('storage/' . $image) }}" alt="Image {{ $index + 1 }}" class="w-full h-16 md:h-24 object-cover group-hover:scale-110 transition-transform duration-300">
                     <div class="absolute inset-0 bg-brand-green/0 group-hover:bg-brand-green/20 transition-colors"></div>
                 </div>
                 @endforeach
             </div>
             @endif
 
-            <section class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-50">
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                    <span class="w-1.5 h-8 bg-brand-green rounded-full"></span>
+            <section class="bg-white p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-gray-50">
+                <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 flex items-center gap-3">
+                    <span class="w-1.5 h-6 md:h-8 bg-brand-green rounded-full"></span>
                     عن المنشأة
                 </h2>
-                <div class="text-gray-600 leading-relaxed text-lg font-medium">
+                <div class="text-gray-600 leading-relaxed text-sm md:text-lg font-medium">
                     {{ $business->description }}
                 </div>
             </section>
 
             <!-- Reviews Section -->
-            <section class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-50">
-                <div class="flex justify-between items-center mb-10">
-                    <h2 class="text-2xl font-bold flex items-center gap-3">
-                        <span class="w-1.5 h-8 bg-brand-green rounded-full"></span>
+            <section class="bg-white p-5 md:p-10 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-gray-50">
+                <div class="flex justify-between items-center mb-6 md:mb-10">
+                    <h2 class="text-xl md:text-2xl font-bold flex items-center gap-3">
+                        <span class="w-1.5 h-6 md:h-8 bg-brand-green rounded-full"></span>
                         التقييمات والآراء
                     </h2>
                 </div>
@@ -133,28 +134,28 @@
                 @endif
 
                 @auth
-                <div x-data="{ rating: 0 }" class="bg-brand-white/50 p-8 rounded-3xl border border-dashed border-gray-200 mb-10">
+                <div x-data="{ rating: 0 }" class="bg-brand-white/50 p-5 md:p-8 rounded-2xl md:rounded-3xl border border-dashed border-gray-200 mb-6 md:mb-10">
                     <h3 class="font-bold text-gray-800 mb-4">أضف تجربتك للمكان</h3>
                     <form action="{{ route('reviews.store', $business->id) }}" method="POST">
                         @csrf
                         <div class="flex gap-2 mb-4">
                             <template x-for="i in 5">
                                 <button type="button" @click="rating = i" class="focus:outline-none transition-transform active:scale-90">
-                                    <svg class="w-8 h-8 cursor-pointer" :class="i <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'" viewBox="0 0 20 20">
+                                    <svg class="w-6 h-6 md:w-8 md:h-8 cursor-pointer" :class="i <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300'" viewBox="0 0 20 20">
                                         <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
                                     </svg>
                                 </button>
                             </template>
                             <input type="hidden" name="rating" :value="rating" required>
                         </div>
-                        <textarea name="comment" required rows="3" class="w-full border-gray-100 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-brand-green bg-white text-gray-800" placeholder="ما رأيك بالخدمة والأسعار؟"></textarea>
-                        <button type="submit" class="mt-4 bg-brand-green text-white font-bold py-3 px-8 rounded-xl hover:opacity-90 transition-all">نشر التقييم</button>
+                        <textarea name="comment" required rows="3" class="w-full border-gray-100 rounded-2xl py-3 md:py-4 px-4 md:px-6 focus:ring-2 focus:ring-brand-green bg-white text-gray-800 text-sm md:text-base" placeholder="ما رأيك بالخدمة والأسعار؟"></textarea>
+                        <button type="submit" class="mt-4 bg-brand-green text-white font-bold py-2.5 md:py-3 px-6 md:px-8 rounded-xl hover:opacity-90 transition-all text-sm md:text-base">نشر التقييم</button>
                     </form>
                 </div>
                 @else
-                <div class="text-center py-6 border rounded-3xl mb-10 bg-gray-50">
-                    <p class="text-gray-500 font-bold mb-4">يجب عليك تسجيل الدخول للمشاركة برأيك</p>
-                    <a href="{{ route('login') }}" class="text-brand-green font-bold underline">تسجيل الدخول</a>
+                <div class="text-center py-5 md:py-6 border rounded-2xl md:rounded-3xl mb-6 md:mb-10 bg-gray-50">
+                    <p class="text-gray-500 font-bold mb-3 md:mb-4 text-sm md:text-base">يجب عليك تسجيل الدخول للمشاركة برأيك</p>
+                    <a href="{{ route('login') }}" class="text-brand-green font-bold underline text-sm md:text-base">تسجيل الدخول</a>
                 </div>
                 @endauth
                 
@@ -187,30 +188,30 @@
         </div>
 
         <!-- Sidebar Info -->
-        <div class="space-y-8">
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50 space-y-8 sticky top-24">
-                <h3 class="text-xl font-bold text-gray-900 border-b border-gray-50 pb-4">معلومات التواصل</h3>
+        <div class="space-y-6 md:space-y-8 order-1 lg:order-2">
+            <div class="bg-white p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-gray-50 space-y-6 md:space-y-8 lg:sticky lg:top-24">
+                <h3 class="text-lg md:text-xl font-bold text-gray-900 border-b border-gray-50 pb-3 md:pb-4">معلومات التواصل</h3>
                 
-                <div class="space-y-6">
-                    <div class="flex items-start gap-5 p-4 rounded-2xl hover:bg-brand-white transition-colors">
-                         <div class="w-12 h-12 bg-brand-green text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-brand-green/20 font-bold">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                <div class="space-y-4 md:space-y-6">
+                    <div class="flex items-start gap-3 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-brand-white transition-colors">
+                         <div class="w-10 h-10 md:w-12 md:h-12 bg-brand-green text-white rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-brand-green/20 font-bold">
+                             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                          </div>
-                         <div>
+                         <div class="min-w-0">
                              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">رقم الهاتف</p>
-                             <p class="font-black text-lg text-gray-800" dir="ltr">{{ $business->phone }}</p>
+                             <p class="font-black text-base md:text-lg text-gray-800 truncate" dir="ltr">{{ $business->phone }}</p>
                          </div>
                     </div>
 
-                    <div class="flex items-start gap-5 p-4 rounded-2xl hover:bg-brand-white transition-colors">
-                         <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center shrink-0 font-bold">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 0 1111.314 0z"></path></svg>
+                    <div class="flex items-start gap-3 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-brand-white transition-colors">
+                         <div class="w-10 h-10 md:w-12 md:h-12 bg-orange-50 text-orange-600 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 font-bold">
+                             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 0 1111.314 0z"></path></svg>
                          </div>
-                         <div>
+                         <div class="min-w-0">
                              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">الموقع</p>
-                             <p class="font-bold text-gray-800 text-lg">{{ $business->subArea?->name ?? 'غير محدد' }}، دمشق</p>
+                             <p class="font-bold text-gray-800 text-base md:text-lg truncate">{{ $business->subArea?->name ?? 'غير محدد' }}، دمشق</p>
                              @if($business->address)
-                                 <p class="text-sm text-gray-500 mt-1">{{ $business->address }}</p>
+                                 <p class="text-xs md:text-sm text-gray-500 mt-1 truncate">{{ $business->address }}</p>
                              @endif
                          </div>
                     </div>
@@ -232,21 +233,12 @@
                     </div>
                 </div>
 
-                <button class="w-full bg-orange-500 text-white font-bold py-5 rounded-2xl hover:bg-orange-600 transition shadow-xl shadow-orange-200 flex items-center justify-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                <button class="w-full bg-orange-500 text-white font-bold py-4 md:py-5 rounded-xl md:rounded-2xl hover:bg-orange-600 transition shadow-xl shadow-orange-200 flex items-center justify-center gap-2 text-sm md:text-base">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
                     الاتجاهات عبر الخرائط
                 </button>
             </div>
 
-            <div class="bg-brand-green text-white p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-                <div class="relative z-10">
-                    <h3 class="text-2xl font-black mb-3">هل أنت صاحب هذا المكان؟</h3>
-                    <p class="text-brand-white/70 text-sm mb-8 leading-relaxed font-bold">قم بتوثيق حسابك للوصول إلى المميزات المتقدمة وإحصائيات الزوار والتواصل المباشر مع العملاء.</p>
-                    <button class="bg-white text-brand-green font-black py-4 px-8 rounded-2xl text-sm hover:scale-105 transition-transform">توثيق المكان الآن</button>
-                </div>
-                <div class="absolute -bottom-10 -left-10 w-48 h-48 bg-white/5 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-                <div class="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-            </div>
         </div>
     </div>
 </div>

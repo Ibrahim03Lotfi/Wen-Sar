@@ -12,6 +12,25 @@ class GovernorateSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Governorate::create(['name' => 'دمشق']);
+        $governorates = [
+            'دمشق',
+            'ريف دمشق',
+            'حلب',
+            'حمص',
+            'حماة',
+            'اللاذقية',
+            'طرطوس',
+            'السويداء',
+            'درعا',
+            'القنيطرة',
+            'الرقة',
+            'الحسكة',
+            'دير الزور',
+            'إدلب',
+        ];
+
+        foreach ($governorates as $name) {
+            \App\Models\Governorate::create(['name' => $name]);
+        }
     }
 }

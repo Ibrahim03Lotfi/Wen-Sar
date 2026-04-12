@@ -58,6 +58,11 @@ class Business extends Model
 
     public function averageRating()
     {
+        // Use already loaded reviews if available for real-time calculation
+        if ($this->relationLoaded('reviews')) {
+            $avg = $this->reviews->avg('rating');
+            return $avg ?: 0;
+        }
         return $this->reviews()->avg('rating') ?: 0;
     }
 }

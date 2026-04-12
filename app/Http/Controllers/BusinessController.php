@@ -48,23 +48,103 @@ class BusinessController extends Controller
         return view('businesses.index', compact('businesses', 'categories', 'districts'));
     }
 
-    public function show(Business $business)
+    public function apiSearch(Request $request)
     {
-        $business->increment('views_count');
-        $business->load(['category', 'subArea', 'reviews.user']);
-        
-        return view('businesses.show', compact('business'));
-    }
+        $query = Business::query()->with(['category', 'subArea', 'reviews']);
 
-    public function category(Category $category)
-    {
-        $businesses = Business::where('category_id', $category->id)
-            ->with(['subArea', 'reviews'])
-            ->get();
+        if ($request->has('district_id') && $request->district_id) {
+            $query->where('district_id', $request->district_id);
+        }
+
+        if ($request->has('sub_area_id') && $request->sub_area_id) {
+            $query->where('sub_area_id', $request->sub_area_id);
+        }
+
+        if ($request->has('category_id') && $request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('query') && $request->query) {
+            $query->where('name', 'like', '%' . $request->input('query') . '%');
+        }
+
+        // Apply Ranking Algorithm
+        $businesses = $query->get()->map(function($business) {
+            $avgRating = $business->reviews->avg('rating') ?: 0;
+            $business->ranking_score = ($avgRating * 0.5) + 
+                                     (min($business->views_count / 100, 5) * 0.3) + 
+                                     (($business->is_featured ? 5 : 0) * 0.2);
+            return $business;
+        })->sortByDesc('ranking_score');
 
         $categories = Category::all();
         $districts = District::all();
 
+        // Return partial view for AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html' => view('businesses._results', compact('businesses', 'categories', 'districts'))->render(),
+                'count' => $businesses->count()
+            ]);
+        }
+
+        return view('businesses.index', compact('businesses', 'categories', 'districts'));
+    }
+
+    public function show(Business $business)
+    {
+        $business->increment('views_count');
+        $business->load(['category', 'subArea', 'reviews' => function($query) {
+            $query->latest()->with('user');
+        }]);
+        
+        return view('businesses.show', compact('business'));
+    }
+
+    public function category(Request $request, Category $category)
+    {
+        $query = Business::where('category_id', $category->id)
+            ->with(['subArea', 'reviews']);
+
+        // Apply search query if provided
+        if ($request->has('query') && $request->query) {
+            $query->where('name', 'like', '%' . $request->input('query') . '%');
+        }
+
+        // Apply district filter if provided
+        if ($request->has('district_id') && $request->district_id) {
+            $query->where('district_id', $request->district_id);
+        }
+
+        // Apply sub-area filter if provided
+        if ($request->has('sub_area_id') && $request->sub_area_id) {
+            $query->where('sub_area_id', $request->sub_area_id);
+        }
+
+        $businesses = $query->get();
+
+        $categories = Category::all();
+        $districts = District::all();
+
+        // Return partial view for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html' => view('businesses._results', compact('businesses', 'categories', 'districts'))->render(),
+                'count' => $businesses->count()
+            ]);
+        }
+
         return view('businesses.index', compact('businesses', 'category', 'categories', 'districts'));
+    }
+
+    public function featured()
+    {
+        $businesses = Business::where('is_featured', true)
+            ->with(['category', 'subArea', 'reviews'])
+            ->orderBy('featured_rank')
+            ->take(25)
+            ->get();
+
+        return view('businesses.featured', compact('businesses'));
     }
 }

@@ -14,8 +14,12 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Store intended role in session if provided
+        if ($request->has('role')) {
+            $request->session()->put('intended_role', $request->role);
+        }
         return view('auth.login');
     }
 
@@ -28,7 +32,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Assign role if stored in session
+        if ($request->session()->has('intended_role')) {
+            $role = $request->session()->get('intended_role');
+            if (!Auth::user()->hasRole($role)) {
+                Auth::user()->assignRole($role);
+            }
+            $request->session()->forget('intended_role');
+        }
+
+        return redirect('/');
     }
 
     /**

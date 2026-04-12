@@ -18,8 +18,12 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Store intended role in session if provided
+        if ($request->has('role')) {
+            $request->session()->put('intended_role', $request->role);
+        }
         return view('auth.register');
     }
 
@@ -46,6 +50,16 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Assign role if stored in session
+        if ($request->session()->has('intended_role')) {
+            $role = $request->session()->get('intended_role');
+            $user->assignRole($role);
+            $request->session()->forget('intended_role');
+        } else {
+            // Default role for users without selection
+            $user->assignRole('user');
+        }
+
+        return redirect('/');
     }
 }

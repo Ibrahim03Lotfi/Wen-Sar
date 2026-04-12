@@ -21,4 +21,35 @@ class HomeController extends Controller
 
         return view('home', compact('governorates', 'categories', 'featuredBusinesses'));
     }
+
+    public function categories()
+    {
+        $categories = Category::withCount('businesses')->get();
+        return view('categories', compact('categories'));
+    }
+
+    public function about()
+    {
+        return view('about');
+    }
+
+    public function contact()
+    {
+        return view('contact');
+    }
+
+    public function contactSubmit(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|max:100',
+            'subject' => 'required|string|max:200',
+            'message' => 'required|string|min:10|max:1000',
+        ]);
+
+        // Here you would typically send an email or store the contact form submission
+        // For now, we'll just redirect back with a success message
+
+        return back()->with('success', 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.');
+    }
 }
