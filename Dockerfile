@@ -8,7 +8,9 @@ RUN npm ci
 COPY resources ./resources
 COPY vite.config.js ./vite.config.js
 COPY public ./public
-RUN npm run build && ls -la public/build/ && ls -la public/build/assets/ 2>/dev/null || echo "No assets folder"
+RUN npm run build
+RUN ls -laR public/build/
+RUN cat public/build/manifest.json || echo "No manifest.json found"
 
 FROM php:8.2-apache
 
@@ -50,7 +52,8 @@ RUN rm -f .env
 # Remove any existing build directory and copy fresh built assets
 RUN rm -rf public/build
 COPY --from=frontend /app/public/build ./public/build
-RUN ls -la public/build/ && ls -la public/build/assets/ 2>/dev/null || echo "No assets folder"
+RUN ls -laR public/build/
+RUN cat public/build/manifest.json || echo "No manifest.json found in final stage"
 
 RUN composer install --no-dev --optimize-autoloader
 

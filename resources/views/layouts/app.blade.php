@@ -7,7 +7,40 @@
     <title>{{ config('app.name', 'وين صار') }}</title>
     
     <!-- Scripts & Styles -->
-    @vite(['resources/js/app.js', 'resources/css/app.css'])
+    @if(app()->environment('local'))
+        @vite(['resources/js/app.js', 'resources/css/app.css'])
+    @else
+        @php
+            try {
+                $manifestPath = public_path('build/manifest.json');
+                if (file_exists($manifestPath)) {
+                    $manifest = json_decode(file_get_contents($manifestPath), true);
+                    $cssPath = $manifest['resources/css/app.css']['file'] ?? null;
+                    $jsPath = $manifest['resources/js/app.js']['file'] ?? null;
+                } else {
+                    $cssPath = null;
+                    $jsPath = null;
+                    // Log error for debugging
+                    \Log::error('manifest.json not found at: ' . $manifestPath);
+                }
+            } catch (\Exception $e) {
+                $cssPath = null;
+                $jsPath = null;
+                \Log::error('Error loading manifest: ' . $e->getMessage());
+            }
+        @endphp
+        @if($cssPath)
+            <link rel="stylesheet" href="{{ asset('build/' . $cssPath) }}">
+        @else
+            <!-- Fallback: CSS not found -->
+            <style>
+                body { background-color: #faf9f6; font-family: 'Cairo', sans-serif; }
+            </style>
+        @endif
+        @if($jsPath)
+            <script src="{{ asset('build/' . $jsPath) }}" defer></script>
+        @endif
+    @endif
     
     <style>
         [x-cloak] { display: none !important; }
