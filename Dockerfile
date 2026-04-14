@@ -3,7 +3,7 @@ FROM node:22-alpine AS frontend
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm install --legacy-peer-deps --no-cache
+RUN npm install --legacy-peer-deps
 
 COPY resources ./resources
 COPY vite.config.js ./vite.config.js
@@ -11,8 +11,6 @@ COPY postcss.config.js ./postcss.config.js
 COPY tailwind.config.js ./tailwind.config.js
 COPY public ./public
 RUN npm run build
-RUN echo "=== CSS File Size ===" && ls -lh public/build/assets/*.css
-RUN echo "=== CSS Content Preview ===" && head -c 500 public/build/assets/*.css
 
 FROM php:8.2-apache
 

@@ -17,7 +17,7 @@
     <!-- Splash Screen -->
     <x-splash-screen />
     
-    <header class="bg-brand-white shadow-sm sticky top-0 z-50 border-b border-gray-100" x-data="{ mobileMenuOpen: false }">
+    <header class="bg-brand-white shadow-sm sticky top-0 z-50 border-b border-gray-100 will-change-transform" x-data="{ mobileMenuOpen: false }" style="transform: translateZ(0);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 md:h-20 items-center justify-between">
                 <!-- Logo (Right in RTL) -->
