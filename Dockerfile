@@ -34,6 +34,11 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Create storage directories with proper permissions
+RUN mkdir -p storage/framework/views storage/framework/cache storage/framework/sessions storage/logs \
+    && chmod -R 775 storage \
+    && chown -R www-data:www-data storage
+
 COPY . .
 
 COPY --from=frontend /app/public/build ./public/build
