@@ -14,9 +14,6 @@ class SubAreaSeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear existing sub-areas
-        SubArea::truncate();
-
         $subAreasData = [
             // دمشق - مدينة دمشق
             'مدينة دمشق' => [
@@ -301,7 +298,7 @@ class SubAreaSeeder extends Seeder
             $district = District::where('name', $districtName)->first();
             if ($district) {
                 foreach ($subAreas as $subAreaName) {
-                    SubArea::create([
+                    SubArea::firstOrCreate([
                         'name' => $subAreaName,
                         'district_id' => $district->id
                     ]);

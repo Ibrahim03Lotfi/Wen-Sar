@@ -30,7 +30,7 @@ class GovernorateSeeder extends Seeder
         ];
 
         foreach ($governorates as $name) {
-            \App\Models\Governorate::create(['name' => $name]);
+            \App\Models\Governorate::firstOrCreate(['name' => $name]);
         }
     }
 }

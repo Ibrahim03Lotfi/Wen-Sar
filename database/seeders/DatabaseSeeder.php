@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -21,14 +20,6 @@ class DatabaseSeeder extends Seeder
             DistrictSeeder::class,
             SubAreaSeeder::class,
             CategorySeeder::class,
-            BusinessSeeder::class,
         ]);
-
-        $admin = User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@dalil.com',
-            'password' => bcrypt('password'),
-        ]);
-        $admin->assignRole('admin');
     }
 }

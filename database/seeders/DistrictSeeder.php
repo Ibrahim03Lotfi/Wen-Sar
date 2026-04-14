@@ -14,9 +14,6 @@ class DistrictSeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear existing districts
-        District::truncate();
-
         $districtsData = [
             // دمشق
             'دمشق' => [
@@ -103,7 +100,7 @@ class DistrictSeeder extends Seeder
             $gov = Governorate::where('name', $govName)->first();
             if ($gov) {
                 foreach ($districts as $districtName) {
-                    District::create([
+                    District::firstOrCreate([
                         'name' => $districtName,
                         'governorate_id' => $gov->id
                     ]);

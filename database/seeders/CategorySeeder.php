@@ -100,12 +100,12 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $mainCategory => $subcategories) {
-            // Create main category
-            $mainCat = Category::create(['name' => $mainCategory]);
+            // Create or find main category
+            $mainCat = Category::firstOrCreate(['name' => $mainCategory]);
 
-            // Create subcategories
+            // Create or find subcategories
             foreach ($subcategories as $subcategory) {
-                Category::create([
+                Category::firstOrCreate([
                     'name' => $subcategory,
                     'parent_id' => $mainCat->id,
                 ]);
