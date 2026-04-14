@@ -29,6 +29,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+ENV ASSET_URL=/
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
     && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
@@ -40,6 +43,9 @@ RUN mkdir -p storage/framework/views storage/framework/cache storage/framework/s
     && chown -R www-data:www-data storage
 
 COPY . .
+
+# Remove local .env file - production env vars should be set at runtime
+RUN rm -f .env
 
 # Remove any existing build directory and copy fresh built assets
 RUN rm -rf public/build
