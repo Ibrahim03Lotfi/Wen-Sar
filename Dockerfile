@@ -3,7 +3,7 @@ FROM node:22-alpine AS frontend
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 COPY resources ./resources
 COPY vite.config.js ./vite.config.js
