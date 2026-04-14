@@ -41,7 +41,9 @@ RUN mkdir -p storage/framework/views storage/framework/cache storage/framework/s
 
 COPY . .
 
+# Copy built assets from frontend stage
 COPY --from=frontend /app/public/build ./public/build
+RUN ls -la public/build/ && ls -la public/build/.vite/ 2>/dev/null || echo "No .vite folder"
 
 RUN composer install --no-dev --optimize-autoloader
 
