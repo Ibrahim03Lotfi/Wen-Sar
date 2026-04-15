@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 set -e
 
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
+
 php artisan storage:link || true
 
 php artisan migrate --force

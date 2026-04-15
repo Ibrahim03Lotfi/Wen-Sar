@@ -9,6 +9,7 @@ use App\Models\District;
 use App\Models\Governorate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessController extends Controller
 {
@@ -30,6 +31,14 @@ class BusinessController extends Controller
     public function store(Request $request)
     {
         try {
+            // Ensure storage directories exist
+            if (!Storage::disk('public')->exists('logos')) {
+                Storage::disk('public')->makeDirectory('logos');
+            }
+            if (!Storage::disk('public')->exists('business_images')) {
+                Storage::disk('public')->makeDirectory('business_images');
+            }
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'english_name' => 'nullable|string|max:255',
@@ -114,6 +123,14 @@ class BusinessController extends Controller
     {
         try {
             $this->authorizeOwner($business);
+
+            // Ensure storage directories exist
+            if (!Storage::disk('public')->exists('logos')) {
+                Storage::disk('public')->makeDirectory('logos');
+            }
+            if (!Storage::disk('public')->exists('business_images')) {
+                Storage::disk('public')->makeDirectory('business_images');
+            }
 
             \Log::info('Business update attempt', ['business_id' => $business->id, 'request_data' => $request->except(['logo', 'images'])]);
 
