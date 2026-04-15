@@ -199,13 +199,51 @@
                 </div>
                 <!-- Mobile Menu -->
                 <div id="mobile-menu" class="hidden mt-4 space-y-2">
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 pt-2 pb-1">{{ __('Dashboard') }}</div>
                     <a href="{{ route('manager.dashboard') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Dashboard') }}</a>
-                    <a href="{{ route('manager.approvals.pending') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Pending') }}</a>
+
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 pt-4 pb-1">{{ __('Approvals') }}</div>
+                    <a href="{{ route('manager.approvals.pending') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        {{ __('Pending') }}
+                        @php
+                            $pendingCount = App\Models\Business::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingCount > 0)
+                            <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $pendingCount }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ route('manager.approvals.expiring') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
+                        {{ __('Expiring Soon') }}
+                        @php
+                            $expiringCount = App\Models\Business::where('status', 'approved')
+                                ->where('contract_ends_at', '<=', now()->addDays(3))
+                                ->where('contract_ends_at', '>=', now())
+                                ->count();
+                        @endphp
+                        @if($expiringCount > 0)
+                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $expiringCount }}</span>
+                        @endif
+                    </a>
+
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 pt-4 pb-1">{{ __('Management') }}</div>
                     <a href="{{ route('manager.businesses.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Businesses') }}</a>
-                    <form method="POST" action="{{ route('manager.logout') }}" class="px-4 py-2">
-                        @csrf
-                        <button type="submit" class="text-red-600">{{ __('Logout') }}</button>
-                    </form>
+                    <a href="{{ route('manager.owners.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Owners') }}</a>
+                    <a href="{{ route('manager.categories.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Categories') }}</a>
+
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 pt-4 pb-1">{{ __('Locations') }}</div>
+                    <a href="{{ route('manager.governorates.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Governorates') }}</a>
+                    <a href="{{ route('manager.districts.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Districts') }}</a>
+                    <a href="{{ route('manager.sub-areas.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Sub Areas') }}</a>
+
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 pt-4 pb-1">{{ __('Administration') }}</div>
+                    <a href="{{ route('manager.managers.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Managers') }}</a>
+
+                    <div class="pt-4">
+                        <form method="POST" action="{{ route('manager.logout') }}" class="px-4 py-2">
+                            @csrf
+                            <button type="submit" class="text-red-600 font-bold">{{ __('Logout') }}</button>
+                        </form>
+                    </div>
                 </div>
             </header>
 
