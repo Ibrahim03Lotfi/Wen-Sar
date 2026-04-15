@@ -1,8 +1,12 @@
 #!/usr/bin/env sh
 set -e
 
-chmod -R 775 storage
-chmod -R 775 bootstrap/cache
+chmod -R 777 storage
+chmod -R 777 bootstrap/cache
+
+mkdir -p storage/app/public/logos
+mkdir -p storage/app/public/business_images
+chmod -R 777 storage/app/public
 
 php artisan storage:link || true
 
