@@ -29,69 +29,75 @@ class BusinessController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'english_name' => 'nullable|string|max:255',
-            'description' => 'required|string',
-            'district_id' => 'required|exists:districts,id',
-            'sub_area_id' => 'required|exists:sub_areas,id',
-            'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:categories,id',
-            'phone' => 'required|string|regex:/^09[0-9]{8}$/',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'address' => 'required|string|max:500',
-            'google_maps_link' => 'nullable|url|max:500',
-            'logo' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
-            'images' => 'required|array|min:1|max:5',
-            'images.*' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
-            'facebook' => 'nullable|url|max:255',
-            'instagram' => 'nullable|url|max:255',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'english_name' => 'nullable|string|max:255',
+                'description' => 'required|string',
+                'district_id' => 'required|exists:districts,id',
+                'sub_area_id' => 'required|exists:sub_areas,id',
+                'category_id' => 'required|exists:categories,id',
+                'subcategory_id' => 'nullable|exists:categories,id',
+                'phone' => 'required|string|regex:/^09[0-9]{8}$/',
+                'opening_time' => 'required|date_format:H:i',
+                'closing_time' => 'required|date_format:H:i',
+                'address' => 'required|string|max:500',
+                'google_maps_link' => 'nullable|url|max:500',
+                'logo' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
+                'images' => 'required|array|min:1|max:5',
+                'images.*' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
+                'facebook' => 'nullable|url|max:255',
+                'instagram' => 'nullable|url|max:255',
+            ]);
 
-        $validated['owner_id'] = Auth::id();
+            \Log::info('Business store attempt', ['validated' => $validated]);
 
-        // Use subcategory if provided, otherwise use main category
-        if ($request->filled('subcategory_id')) {
-            $validated['category_id'] = $request->subcategory_id;
-        }
-        unset($validated['subcategory_id']);
+            $validated['owner_id'] = Auth::id();
 
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
+            // Use subcategory if provided, otherwise use main category
+            if ($request->filled('subcategory_id')) {
+                $validated['category_id'] = $request->subcategory_id;
+            }
+            unset($validated['subcategory_id']);
+
+            // Handle logo upload
             $logoPath = $request->file('logo')->store('logos', 'public');
             $validated['logo'] = $logoPath;
-        }
 
-        // Handle images upload
-        $imagePaths = [];
-        foreach ($request->file('images') as $image) {
-            $path = $image->store('business_images', 'public');
-            $imagePaths[] = $path;
-        }
-        $validated['images'] = $imagePaths;
+            // Handle images upload
+            $imagePaths = [];
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('business_images', 'public');
+                $imagePaths[] = $path;
+            }
+            $validated['images'] = $imagePaths;
 
-        // Handle social links
-        $socialLinks = [];
-        if ($request->filled('facebook')) {
-            $socialLinks['facebook'] = $request->facebook;
-        }
-        if ($request->filled('instagram')) {
-            $socialLinks['instagram'] = $request->instagram;
-        }
-        if (!empty($socialLinks)) {
+            // Remove fields that are not in the database
+            unset($validated['facebook'], $validated['instagram']);
+
+            // Handle social links
+            $socialLinks = [];
+            if ($request->filled('facebook')) {
+                $socialLinks['facebook'] = $request->facebook;
+            }
+            if ($request->filled('instagram')) {
+                $socialLinks['instagram'] = $request->instagram;
+            }
             $validated['social_links'] = $socialLinks;
+
+            $validated['status'] = 'pending';
+
+            \Log::info('Before store', ['validated' => $validated]);
+
+            Business::create($validated);
+
+            \Log::info('After store');
+
+            return redirect()->route('owner.businesses.index')->with('success', 'تم تقديم المنشأة بنجاح وهي بانتظار الموافقة.');
+        } catch (\Exception $e) {
+            \Log::error('Business store failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->withInput()->with('error', 'حدث خطأ أثناء إضافة المنشأة: ' . $e->getMessage());
         }
-
-        // Remove fields that are not in the database
-        unset($validated['facebook'], $validated['instagram']);
-
-        // Set status to pending for manager approval
-        $validated['status'] = 'pending';
-
-        Business::create($validated);
-
-        return redirect()->route('owner.businesses.index')->with('success', __('Business submitted successfully and is pending approval.'));
     }
 
     public function edit(Business $business)

@@ -10,6 +10,46 @@
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        @if($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="mr-3">
+                        <h3 class="text-sm font-medium text-red-800">حدث خطأ في الحفظ</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="mr-3">
+                        <h3 class="text-sm font-medium text-red-800">حدث خطأ</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            {{ session('error') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <form action="{{ route('owner.businesses.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
@@ -27,19 +67,19 @@
                     <!-- Name -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">اسم المنشأة <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="مثال: مطعم زيتون، صالون الفخامة...">
+                        <input type="text" name="name" value="{{ old('name') }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="مثال: مطعم زيتون، صالون الفخامة...">
                     </div>
 
                     <!-- English Name -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">اسم المنشأة بالإنجليزي</label>
-                        <input type="text" name="english_name" dir="ltr" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant, Luxury Salon...">
+                        <input type="text" name="english_name" dir="ltr" value="{{ old('english_name') }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant, Luxury Salon...">
                     </div>
 
                     <!-- Description -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">الوصف <span class="text-red-500">*</span></label>
-                        <textarea name="description" rows="3" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="تحدث عن منشأتك والخدمات التي تقدمها..."></textarea>
+                        <textarea name="description" rows="3" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="تحدث عن منشأتك والخدمات التي تقدمها...">{{ old('description') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -185,13 +225,13 @@
                     <!-- Detailed Address -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">العنوان التفصيلي <span class="text-red-500">*</span></label>
-                        <input type="text" name="address" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="الشارع، المبنى، الطابق، بالقرب من...">
+                        <input type="text" name="address" value="{{ old('address') }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="الشارع، المبنى، الطابق، بالقرب من...">
                     </div>
 
                     <!-- Google Maps Link -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">رابط خرائط غوغل</label>
-                        <input type="url" name="google_maps_link" dir="ltr" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://maps.google.com/...">
+                        <input type="url" name="google_maps_link" dir="ltr" value="{{ old('google_maps_link') }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://maps.google.com/...">
                         <p class="text-xs text-gray-400 mt-2">انسخ رابط الموقع من خرائط غوغل والصقه هنا</p>
                     </div>
                 </div>
@@ -209,15 +249,21 @@
                 </div>
                 <div class="p-6">
                     <!-- Phone with 09 prefix -->
+                    @php
+                        $phoneSuffix = '';
+                        if(old('phone') && str_starts_with(old('phone'), '09')) {
+                            $phoneSuffix = substr(old('phone'), 2);
+                        }
+                    @endphp
                     <div class="mb-6">
                         <label class="block text-sm font-bold text-gray-700 mb-2">رقم الهاتف <span class="text-red-500">*</span></label>
                         <div class="relative flex items-center">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">09</span>
-                            <input type="tel" name="phone_suffix" id="phoneInput" required maxlength="8"
+                            <input type="tel" name="phone_suffix" id="phoneInput" required maxlength="8" value="{{ $phoneSuffix }}"
                                    class="w-full border-gray-300 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
                                    placeholder="١٢٣٤٥٦٧٨"
                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8); document.getElementById('fullPhone').value = '09' + this.value;">
-                            <input type="hidden" name="phone" id="fullPhone" value="09">
+                            <input type="hidden" name="phone" id="fullPhone" value="{{ old('phone', '09') }}">
                         </div>
                         <p class="text-xs text-gray-400 mt-2">مثال: <span class="font-bold text-gray-600">09</span><span class="text-gray-400">12345678</span></p>
                     </div>
@@ -226,11 +272,11 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">وقت الفتح <span class="text-red-500">*</span></label>
-                            <input type="time" name="opening_time" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                            <input type="time" name="opening_time" value="{{ old('opening_time') }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">وقت الإغلاق <span class="text-red-500">*</span></label>
-                            <input type="time" name="closing_time" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                            <input type="time" name="closing_time" value="{{ old('closing_time') }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                         </div>
                     </div>
                 </div>
@@ -281,12 +327,12 @@
                     <!-- Facebook -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">فيسبوك</label>
-                        <input type="url" name="facebook" dir="ltr" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://facebook.com/...">
+                        <input type="url" name="facebook" dir="ltr" value="{{ old('facebook') }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://facebook.com/...">
                     </div>
                     <!-- Instagram -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">إنستغرام</label>
-                        <input type="url" name="instagram" dir="ltr" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://instagram.com/...">
+                        <input type="url" name="instagram" dir="ltr" value="{{ old('instagram') }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://instagram.com/...">
                     </div>
                 </div>
             </div>
