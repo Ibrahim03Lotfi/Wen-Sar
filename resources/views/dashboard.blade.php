@@ -52,6 +52,71 @@
                     </div>
                 </div>
 
+                <!-- Change Password Section -->
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 mb-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-brand-green/10 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800">تغيير كلمة المرور</h2>
+                    </div>
+
+                    @if(session('success'))
+                        <div class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center gap-2 text-green-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                {{ session('success') }}
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($errors->any())
+                        <div class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div class="flex items-start gap-2 text-red-700">
+                                <svg class="w-5 h-5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <ul class="list-disc list-inside">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('owner.password.update') }}" onsubmit="return confirm('هل أنت متأكد من تغيير كلمة المرور؟')">
+                        @csrf
+                        @method('PUT')
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">كلمة المرور الحالية <span class="text-red-500">*</span></label>
+                                <input type="password" name="current_password" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="••••••••">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">كلمة المرور الجديدة <span class="text-red-500">*</span></label>
+                                <input type="password" name="password" required minlength="8" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="••••••••">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">تأكيد كلمة المرور الجديدة <span class="text-red-500">*</span></label>
+                                <input type="password" name="password_confirmation" required minlength="8" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="bg-brand-green text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                تحديث كلمة المرور
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- Businesses List -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100">

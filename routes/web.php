@@ -43,6 +43,7 @@ Route::middleware(['auth'])->prefix('owner')->name('owner.')->group(function () 
     Route::post('/businesses', [OwnerBusinessController::class, 'store'])->name('businesses.store');
     Route::get('/businesses/{business}/edit', [OwnerBusinessController::class, 'edit'])->name('businesses.edit');
     Route::put('/businesses/{business}', [OwnerBusinessController::class, 'update'])->name('businesses.update');
+    Route::put('/password', [DashboardController::class, 'updatePassword'])->name('password.update');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
