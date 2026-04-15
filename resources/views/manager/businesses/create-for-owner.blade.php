@@ -13,6 +13,46 @@
     </a>
 </div>
 
+@if($errors->any())
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="mr-3">
+                <h3 class="text-sm font-medium text-red-800">{{ __('Error') }}</h3>
+                <div class="mt-2 text-sm text-red-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="mr-3">
+                <h3 class="text-sm font-medium text-red-800">{{ __('Error') }}</h3>
+                <div class="mt-2 text-sm text-red-700">
+                    {{ session('error') }}
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
 <!-- Auto-approve Notice -->
 <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
     <div class="flex items-center gap-3">
@@ -28,7 +68,7 @@
     </div>
 </div>
 
-<form action="{{ route('manager.businesses.store-for-owner', $user) }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ governorateId: '', districtId: '', subAreas: [], districts: [], async updateDistricts() { if(!this.governorateId) { this.districts = []; return; } const response = await fetch(`/api/governorates/${this.governorateId}/districts`); this.districts = await response.json(); }, async updateSubAreas() { if(!this.districtId) { this.subAreas = []; return; } const response = await fetch(`/api/districts/${this.districtId}/sub-areas`); this.subAreas = await response.json(); } }" x-init="$watch('governorateId', value => updateDistricts())">
+<form action="{{ route('manager.businesses.store-for-owner', $user) }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ governorateId: '{{ old('district_id') ? \App\Models\District::find(old('district_id'))?->governorate_id : '' }}', districtId: '{{ old('district_id') }}', subAreas: [], districts: [], async updateDistricts() { if(!this.governorateId) { this.districts = []; return; } const response = await fetch(`/api/governorates/${this.governorateId}/districts`); this.districts = await response.json(); }, async updateSubAreas() { if(!this.districtId) { this.subAreas = []; return; } const response = await fetch(`/api/districts/${this.districtId}/sub-areas`); this.subAreas = await response.json(); } }" x-init="$watch('governorateId', value => updateDistricts())">
     @csrf
 
     <!-- Section 1: Basic Information -->
@@ -45,19 +85,19 @@
             <!-- Name -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Business Name') }} <span class="text-red-500">*</span></label>
-                <input type="text" name="name" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="{{ __('Example: Olive Restaurant') }}">
+                <input type="text" name="name" value="{{ old('name') }}" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="{{ __('Example: Olive Restaurant') }}">
             </div>
 
             <!-- English Name -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('English Name') }}</label>
-                <input type="text" name="english_name" dir="ltr" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant...">
+                <input type="text" name="english_name" dir="ltr" value="{{ old('english_name') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant...">
             </div>
 
             <!-- Description -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Description') }}</label>
-                <textarea name="description" rows="3" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="{{ __('Describe the business and services...') }}"></textarea>
+                <textarea name="description" rows="3" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="{{ __('Describe the business and services...') }}">{{ old('description') }}</textarea>
             </div>
         </div>
     </div>
@@ -81,7 +121,7 @@
                     <select name="governorate_id" x-model="governorateId" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
                         <option value="">{{ __('Select Governorate...') }}</option>
                         @foreach(App\Models\Governorate::all() as $governorate)
-                            <option value="{{ $governorate->id }}">{{ $governorate->name }}</option>
+                            <option value="{{ $governorate->id }}" {{ old('district_id') ? (\App\Models\District::find(old('district_id'))?->governorate_id == $governorate->id ? 'selected' : '') : '' }}>{{ $governorate->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -92,7 +132,7 @@
                     <select name="district_id" x-model="districtId" @change="updateSubAreas()" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
                         <option value="">{{ __('Select District...') }}</option>
                         <template x-for="district in districts" :key="district.id">
-                            <option :value="district.id" x-text="district.name"></option>
+                            <option :value="district.id" x-text="district.name" :selected="district.id == {{ old('district_id') }}"></option>
                         </template>
                     </select>
                 </div>
@@ -105,7 +145,7 @@
                     <select name="sub_area_id" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
                         <option value="">{{ __('Select Sub-area...') }}</option>
                         <template x-for="area in subAreas" :key="area.id">
-                            <option :value="area.id" x-text="area.name"></option>
+                            <option :value="area.id" x-text="area.name" :selected="area.id == {{ old('sub_area_id') }}"></option>
                         </template>
                     </select>
                 </div>
@@ -116,7 +156,7 @@
                     <select name="category_id" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
                         <option value="">{{ __('Select Category...') }}</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -125,7 +165,7 @@
             <!-- Detailed Address -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Detailed Address') }}</label>
-                <input type="text" name="address" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="{{ __('Street, Building, Floor, Near...') }}">
+                <input type="text" name="address" value="{{ old('address') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="{{ __('Street, Building, Floor, Near...') }}">
             </div>
         </div>
     </div>
@@ -142,15 +182,21 @@
         </div>
         <div class="p-6">
             <!-- Phone -->
+            @php
+                $phoneSuffix = '';
+                if(old('phone') && str_starts_with(old('phone'), '09')) {
+                    $phoneSuffix = substr(old('phone'), 2);
+                }
+            @endphp
             <div class="mb-6">
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Phone Number') }} <span class="text-red-500">*</span></label>
                 <div class="relative flex items-center">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">09</span>
-                    <input type="tel" name="phone_suffix" id="phoneInput" required maxlength="8"
+                    <input type="tel" name="phone_suffix" id="phoneInput" required maxlength="8" value="{{ $phoneSuffix }}"
                            class="w-full border-2 border-gray-200 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
                            placeholder="12345678"
                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8); document.getElementById('fullPhone').value = '09' + this.value;">
-                    <input type="hidden" name="phone" id="fullPhone" value="09">
+                    <input type="hidden" name="phone" id="fullPhone" value="{{ old('phone', '09') }}">
                 </div>
             </div>
 
@@ -158,11 +204,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Opening Time') }}</label>
-                    <input type="time" name="opening_time" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                    <input type="time" name="opening_time" value="{{ old('opening_time') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Closing Time') }}</label>
-                    <input type="time" name="closing_time" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                    <input type="time" name="closing_time" value="{{ old('closing_time') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                 </div>
             </div>
         </div>
@@ -213,12 +259,12 @@
             <!-- Facebook -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Facebook') }}</label>
-                <input type="url" name="facebook" dir="ltr" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://facebook.com/...">
+                <input type="url" name="facebook" dir="ltr" value="{{ old('facebook') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://facebook.com/...">
             </div>
             <!-- Instagram -->
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Instagram') }}</label>
-                <input type="url" name="instagram" dir="ltr" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://instagram.com/...">
+                <input type="url" name="instagram" dir="ltr" value="{{ old('instagram') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://instagram.com/...">
             </div>
         </div>
     </div>
@@ -235,11 +281,11 @@
         </div>
         <div class="p-6">
             <select name="contract_duration" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
-                <option value="14">14 {{ __('days') }}</option>
-                <option value="30">30 {{ __('days') }}</option>
-                <option value="90" selected>90 {{ __('days') }}</option>
-                <option value="180">180 {{ __('days') }}</option>
-                <option value="365">1 {{ __('year') }}</option>
+                <option value="14" {{ old('contract_duration') == '14' ? 'selected' : '' }}>14 {{ __('days') }}</option>
+                <option value="30" {{ old('contract_duration') == '30' ? 'selected' : '' }}>30 {{ __('days') }}</option>
+                <option value="90" {{ old('contract_duration') == '90' ? 'selected' : (old('contract_duration') ? '' : 'selected') }}>90 {{ __('days') }}</option>
+                <option value="180" {{ old('contract_duration') == '180' ? 'selected' : '' }}>180 {{ __('days') }}</option>
+                <option value="365" {{ old('contract_duration') == '365' ? 'selected' : '' }}>1 {{ __('year') }}</option>
             </select>
             <p class="text-sm text-gray-500 mt-2">{{ __('Select how long the business contract will be valid.') }}</p>
         </div>

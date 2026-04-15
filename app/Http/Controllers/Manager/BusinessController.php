@@ -10,6 +10,7 @@ use App\Models\SubArea;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessController extends Controller
 {
@@ -123,72 +124,84 @@ class BusinessController extends Controller
 
     public function storeForOwner(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'english_name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'district_id' => 'required|exists:districts,id',
-            'sub_area_id' => 'nullable|exists:sub_areas,id',
-            'category_id' => 'required|exists:categories,id',
-            'phone' => 'required|string|regex:/^09[0-9]{8}$/',
-            'opening_time' => 'nullable|date_format:H:i',
-            'closing_time' => 'nullable|date_format:H:i',
-            'address' => 'nullable|string|max:500',
-            'logo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
-            'images' => 'nullable|array|max:5',
-            'images.*' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
-            'facebook' => 'nullable|url|max:255',
-            'instagram' => 'nullable|url|max:255',
-            'contract_duration' => 'required|in:14,30,90,180,365',
-        ]);
-
-        $validated['owner_id'] = $user->id;
-        $validated['status'] = 'approved';
-        $validated['approved_by'] = Auth::guard('manager')->id();
-        $validated['approved_at'] = now();
-
-        // Set contract dates based on selected duration
-        $duration = (int) $request->contract_duration;
-        $validated['contract_starts_at'] = now();
-        $validated['contract_ends_at'] = now()->addDays($duration);
-        $validated['contract_duration_days'] = $duration;
-
-        // Remove contract_duration from validated as it's not a database field
-        unset($validated['contract_duration']);
-
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
-            $validated['logo'] = $logoPath;
-        }
-
-        // Handle images upload
-        if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('business_images', 'public');
-                $imagePaths[] = $path;
+        try {
+            // Ensure storage directories exist
+            if (!Storage::disk('public')->exists('logos')) {
+                Storage::disk('public')->makeDirectory('logos');
             }
-            $validated['images'] = $imagePaths;
-        }
+            if (!Storage::disk('public')->exists('business_images')) {
+                Storage::disk('public')->makeDirectory('business_images');
+            }
 
-        // Handle social links
-        $socialLinks = [];
-        if ($request->filled('facebook')) {
-            $socialLinks['facebook'] = $request->facebook;
-        }
-        if ($request->filled('instagram')) {
-            $socialLinks['instagram'] = $request->instagram;
-        }
-        if (!empty($socialLinks)) {
-            $validated['social_links'] = $socialLinks;
-        }
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'english_name' => 'nullable|string|max:255',
+                'description' => 'nullable|string',
+                'district_id' => 'required|exists:districts,id',
+                'sub_area_id' => 'nullable|exists:sub_areas,id',
+                'category_id' => 'required|exists:categories,id',
+                'phone' => 'required|string|min:9|max:15',
+                'opening_time' => 'nullable|date_format:H:i',
+                'closing_time' => 'nullable|date_format:H:i',
+                'address' => 'nullable|string|max:500',
+                'logo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
+                'images' => 'nullable|array|max:5',
+                'images.*' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
+                'facebook' => 'nullable|url|max:255',
+                'instagram' => 'nullable|url|max:255',
+                'contract_duration' => 'required|in:14,30,90,180,365',
+            ]);
 
-        // Remove fields that are not in the database
-        unset($validated['facebook'], $validated['instagram']);
+            $validated['owner_id'] = $user->id;
+            $validated['status'] = 'approved';
+            $validated['approved_by'] = Auth::guard('manager')->id();
+            $validated['approved_at'] = now();
 
-        Business::create($validated);
+            // Set contract dates based on selected duration
+            $duration = (int) $request->contract_duration;
+            $validated['contract_starts_at'] = now();
+            $validated['contract_ends_at'] = now()->addDays($duration);
+            $validated['contract_duration_days'] = $duration;
 
-        return redirect()->route('manager.owners.show', $user)->with('success', __('Business added and approved successfully.'));
+            // Remove contract_duration from validated as it's not a database field
+            unset($validated['contract_duration']);
+
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                $logoPath = $request->file('logo')->store('logos', 'public');
+                $validated['logo'] = $logoPath;
+            }
+
+            // Handle images upload
+            if ($request->hasFile('images')) {
+                $imagePaths = [];
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('business_images', 'public');
+                    $imagePaths[] = $path;
+                }
+                $validated['images'] = $imagePaths;
+            }
+
+            // Handle social links
+            $socialLinks = [];
+            if ($request->filled('facebook')) {
+                $socialLinks['facebook'] = $request->facebook;
+            }
+            if ($request->filled('instagram')) {
+                $socialLinks['instagram'] = $request->instagram;
+            }
+            if (!empty($socialLinks)) {
+                $validated['social_links'] = $socialLinks;
+            }
+
+            // Remove fields that are not in the database
+            unset($validated['facebook'], $validated['instagram']);
+
+            Business::create($validated);
+
+            return redirect()->route('manager.owners.show', $user)->with('success', __('Business added and approved successfully.'));
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', __('Error adding business: ') . $e->getMessage());
+        }
     }
 }
