@@ -171,15 +171,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const splash = document.getElementById('splash-screen');
-
-        // Check if splash was already shown
-        if (localStorage.getItem('splashShownV2')) {
-            splash.style.display = 'none';
-            return;
-        }
-
-        // Mark splash as shown
-        localStorage.setItem('splashShownV2', 'true');
         
         const tagline = document.getElementById('splash-tagline');
         const typingText = document.getElementById('typing-text');

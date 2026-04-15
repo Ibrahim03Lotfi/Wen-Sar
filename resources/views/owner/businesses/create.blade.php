@@ -53,7 +53,7 @@
                     districts: {{ json_encode($governorates->first()?->districts ?? []) }},
                     categoryId: '',
                     subcategories: [],
-                    allCategories: {{ json_encode(Category::with('subcategories')->whereNull('parent_id')->get()) }},
+                    allCategories: {{ json_encode($categories) }},
                     async updateDistricts() {
                         if(!this.governorateId) {
                             this.districts = [];

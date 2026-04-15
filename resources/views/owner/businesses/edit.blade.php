@@ -55,7 +55,7 @@
                     districts: [],
                     categoryId: '{{ $business->category->parent_id ?? $business->category_id ?? '' }}',
                     subcategories: [],
-                    allCategories: {{ json_encode(Category::with('subcategories')->whereNull('parent_id')->get()) }},
+                    allCategories: {{ json_encode($categories) }},
                     async init() {
                         if(this.governorateId) await this.updateDistricts();
                         if(this.districtId) await this.updateSubAreas();

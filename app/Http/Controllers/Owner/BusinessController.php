@@ -23,7 +23,7 @@ class BusinessController extends Controller
     public function create()
     {
         $governorates = Governorate::with('districts')->get();
-        $categories = Category::whereNull('parent_id')->get();
+        $categories = Category::with('subcategories')->whereNull('parent_id')->get();
         return view('owner.businesses.create', compact('governorates', 'categories'));
     }
 
@@ -99,8 +99,8 @@ class BusinessController extends Controller
         $this->authorizeOwner($business);
 
         $governorates = Governorate::with('districts')->get();
-        $categories = Category::whereNull('parent_id')->get();
-        
+        $categories = Category::with('subcategories')->whereNull('parent_id')->get();
+
         return view('owner.businesses.edit', compact('business', 'governorates', 'categories'));
     }
 
