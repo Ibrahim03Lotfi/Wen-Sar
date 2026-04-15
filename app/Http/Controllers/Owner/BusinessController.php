@@ -113,18 +113,15 @@ class BusinessController extends Controller
             'english_name' => 'nullable|string|max:255',
             'description' => 'required|string',
             'district_id' => 'required|exists:districts,id',
-            'sub_area_id' => 'required|exists:sub_areas,id',
+            'sub_area_id' => 'nullable|exists:sub_areas,id',
             'category_id' => 'required|exists:categories,id',
             'subcategory_id' => 'nullable|exists:categories,id',
-            'phone' => 'required|string|regex:/^09[0-9]{8}$/',
+            'phone' => 'required|string|min:9|max:15',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
             'address' => 'required|string|max:500',
             'google_maps_link' => 'nullable|url|max:500',
             'logo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
-            'images' => 'nullable|array|min:1|max:5',
-            'images.*' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
-            'images_to_delete' => 'nullable|string',
             'facebook' => 'nullable|url|max:255',
             'instagram' => 'nullable|url|max:255',
         ]);
@@ -144,29 +141,32 @@ class BusinessController extends Controller
         }
         unset($validated['subcategory_id']);
 
+        // Handle null sub_area_id
+        if (!$request->filled('sub_area_id')) {
+            unset($validated['sub_area_id']);
+        }
+
         // Handle images upload
+        $currentImages = $business->images ?? [];
         if ($request->hasFile('images')) {
-            $existingImages = $business->images ?? [];
             $imagePaths = [];
             foreach ($request->file('images') as $image) {
                 $path = $image->store('business_images', 'public');
                 $imagePaths[] = $path;
             }
-            $validated['images'] = array_merge($existingImages, $imagePaths);
-        } else {
-            // Preserve existing images if no new images uploaded
-            $validated['images'] = $business->images ?? [];
+            $currentImages = array_merge($currentImages, $imagePaths);
         }
 
         // Handle images deletion
         if ($request->filled('images_to_delete')) {
             $imagesToDelete = json_decode($request->images_to_delete, true);
-            $currentImages = $validated['images'] ?? [];
-            $validated['images'] = array_values(array_diff($currentImages, $imagesToDelete));
+            $currentImages = array_values(array_diff($currentImages, $imagesToDelete));
         }
 
+        $validated['images'] = $currentImages;
+
         // Remove fields that are not in the database
-        unset($validated['facebook'], $validated['instagram'], $validated['images_to_delete']);
+        unset($validated['facebook'], $validated['instagram']);
 
         // Handle social links
         $socialLinks = $business->social_links ?? [];

@@ -136,9 +136,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Sub-area -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">الحي / المنطقة الفرعية <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">الحي / المنطقة الفرعية</label>
                             <div class="relative">
-                                <select name="sub_area_id" x-model="subAreaId" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="sub_area_id" x-model="subAreaId" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر الحي...</option>
                                     <template x-for="area in subAreas" :key="area.id">
                                         <option :value="area.id" x-text="area.name" :selected="area.id == subAreaId"></option>
