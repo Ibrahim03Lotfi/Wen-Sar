@@ -300,38 +300,50 @@
 </form>
 
 <script>
-    // Logo preview
-    document.getElementById('logoInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const preview = document.getElementById('logoPreview');
-            const img = preview.querySelector('img');
-            img.src = URL.createObjectURL(file);
-            preview.classList.remove('hidden');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Logo preview
+        const logoInput = document.getElementById('logoInput');
+        if (logoInput) {
+            logoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const preview = document.getElementById('logoPreview');
+                    const img = preview.querySelector('img');
+                    img.src = URL.createObjectURL(file);
+                    preview.classList.remove('hidden');
+                }
+            });
         }
-    });
 
-    function removeLogo() {
-        const preview = document.getElementById('logoPreview');
-        const input = document.getElementById('logoInput');
-        preview.classList.add('hidden');
-        input.value = '';
-    }
+        window.removeLogo = function() {
+            const preview = document.getElementById('logoPreview');
+            const input = document.getElementById('logoInput');
+            if (preview && input) {
+                preview.classList.add('hidden');
+                input.value = '';
+            }
+        };
 
-    // Images preview
-    document.getElementById('imagesInput').addEventListener('change', function(e) {
-        const files = e.target.files;
-        const container = document.getElementById('imagePreviews');
-        container.innerHTML = '';
+        // Images preview
+        const imagesInput = document.getElementById('imagesInput');
+        if (imagesInput) {
+            imagesInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                const container = document.getElementById('imagePreviews');
+                if (container) {
+                    container.innerHTML = '';
 
-        for (let file of files) {
-            const div = document.createElement('div');
-            div.className = 'relative group';
-            div.innerHTML = `
-                <img src="${URL.createObjectURL(file)}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition">
-                <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm">×</button>
-            `;
-            container.appendChild(div);
+                    for (let file of files) {
+                        const div = document.createElement('div');
+                        div.className = 'relative group';
+                        div.innerHTML = `
+                            <img src="${URL.createObjectURL(file)}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition">
+                            <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm">×</button>
+                        `;
+                        container.appendChild(div);
+                    }
+                }
+            });
         }
     });
 </script>
