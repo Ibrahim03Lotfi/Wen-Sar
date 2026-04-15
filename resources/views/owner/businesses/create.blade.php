@@ -53,7 +53,7 @@
                     districts: {{ json_encode($governorates->first()?->districts ?? []) }},
                     categoryId: '',
                     subcategories: [],
-                    allCategories: {{ json_encode(Category::with('children')->whereNull('parent_id')->get()) }},
+                    allCategories: {{ json_encode(Category::with('subcategories')->whereNull('parent_id')->get()) }},
                     async updateDistricts() {
                         if(!this.governorateId) {
                             this.districts = [];
@@ -72,7 +72,7 @@
                     },
                     updateSubcategories() {
                         const category = this.allCategories.find(c => c.id == this.categoryId);
-                        this.subcategories = category ? category.children : [];
+                        this.subcategories = category ? category.subcategories : [];
                     }
                  }"
                  x-init="$watch('governorateId', value => updateDistricts()); $watch('categoryId', value => updateSubcategories())">

@@ -36,6 +36,7 @@ class BusinessController extends Controller
             'district_id' => 'required|exists:districts,id',
             'sub_area_id' => 'required|exists:sub_areas,id',
             'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
             'phone' => 'required|string|regex:/^09[0-9]{8}$/',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
@@ -49,6 +50,12 @@ class BusinessController extends Controller
         ]);
 
         $validated['owner_id'] = Auth::id();
+
+        // Use subcategory if provided, otherwise use main category
+        if ($request->filled('subcategory_id')) {
+            $validated['category_id'] = $request->subcategory_id;
+        }
+        unset($validated['subcategory_id']);
 
         // Handle logo upload
         if ($request->hasFile('logo')) {
@@ -108,6 +115,7 @@ class BusinessController extends Controller
             'district_id' => 'required|exists:districts,id',
             'sub_area_id' => 'required|exists:sub_areas,id',
             'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
             'phone' => 'required|string|regex:/^09[0-9]{8}$/',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
@@ -129,6 +137,12 @@ class BusinessController extends Controller
             // Keep existing logo if not uploaded
             $validated['logo'] = $business->logo;
         }
+
+        // Use subcategory if provided, otherwise use main category
+        if ($request->filled('subcategory_id')) {
+            $validated['category_id'] = $request->subcategory_id;
+        }
+        unset($validated['subcategory_id']);
 
         // Handle images upload
         if ($request->hasFile('images')) {

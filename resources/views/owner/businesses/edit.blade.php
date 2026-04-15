@@ -39,23 +39,27 @@
 
                     <!-- Description -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">الوصف</label>
-                        <textarea name="description" rows="3" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">{{ $business->description }}</textarea>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">الوصف <span class="text-red-500">*</span></label>
+                        <textarea name="description" rows="3" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">{{ $business->description }}</textarea>
                     </div>
                 </div>
             </div>
 
             <!-- Section 2: Location -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" 
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
                  x-data="{ 
                     governorateId: '{{ $business->district->governorate_id ?? '' }}',
                     districtId: '{{ $business->district_id }}',
                     subAreaId: '{{ $business->sub_area_id ?? '' }}',
                     subAreas: [],
                     districts: [],
+                    categoryId: '{{ $business->category->parent_id ?? $business->category_id ?? '' }}',
+                    subcategories: [],
+                    allCategories: {{ json_encode(Category::with('subcategories')->whereNull('parent_id')->get()) }},
                     async init() {
                         if(this.governorateId) await this.updateDistricts();
                         if(this.districtId) await this.updateSubAreas();
+                        this.updateSubcategories();
                     },
                     async updateDistricts() {
                         if(!this.governorateId) {
@@ -72,9 +76,13 @@
                         }
                         const response = await fetch(`/api/districts/${this.districtId}/sub-areas`);
                         this.subAreas = await response.json();
+                    },
+                    updateSubcategories() {
+                        const category = this.allCategories.find(c => c.id == this.categoryId);
+                        this.subcategories = category ? category.subcategories : [];
                     }
                  }"
-                 x-init="init()">
+                 x-init="init(); $watch('categoryId', value => updateSubcategories())">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <h2 class="font-bold text-gray-800 flex items-center gap-2">
                         <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,9 +136,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Sub-area -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">الحي / المنطقة الفرعية</label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">الحي / المنطقة الفرعية <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="sub_area_id" x-model="subAreaId" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="sub_area_id" x-model="subAreaId" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر الحي...</option>
                                     <template x-for="area in subAreas" :key="area.id">
                                         <option :value="area.id" x-text="area.name" :selected="area.id == subAreaId"></option>
@@ -146,13 +154,13 @@
 
                         <!-- Category -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف الرئيسي <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="category_id" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="category_id" x-model="categoryId" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر التصنيف...</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ $business->category_id == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
-                                    @endforeach
+                                    <template x-for="category in allCategories" :key="category.id">
+                                        <option :value="category.id" x-text="category.name"></option>
+                                    </template>
                                 </select>
                                 <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,10 +171,35 @@
                         </div>
                     </div>
 
+                    <!-- Subcategory -->
+                    <div x-show="subcategories.length > 0">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف الفرعي</label>
+                        <div class="relative">
+                            <select name="subcategory_id" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <option value="">اختر التصنيف الفرعي...</option>
+                                <template x-for="subcategory in subcategories" :key="subcategory.id">
+                                    <option :value="subcategory.id" x-text="subcategory.name"></option>
+                                </template>
+                            </select>
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Detailed Address -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">العنوان التفصيلي</label>
-                        <input type="text" name="address" value="{{ $business->address ?? '' }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="الشارع، المبنى، الطابق، بالقرب من...">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">العنوان التفصيلي <span class="text-red-500">*</span></label>
+                        <input type="text" name="address" value="{{ $business->address ?? '' }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="الشارع، المبنى، الطابق، بالقرب من...">
+                    </div>
+
+                    <!-- Google Maps Link -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">رابط خرائط غوغل <span class="text-red-500">*</span></label>
+                        <input type="url" name="google_maps_link" dir="ltr" value="{{ $business->google_maps_link ?? '' }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://maps.google.com/...">
+                        <p class="text-xs text-gray-400 mt-2">انسخ رابط الموقع من خرائط غوغل والصقه هنا</p>
                     </div>
                 </div>
             </div>
@@ -205,12 +238,12 @@
                     <!-- Opening Hours -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الفتح</label>
-                            <input type="time" name="opening_time" value="{{ $business->opening_time }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الفتح <span class="text-red-500">*</span></label>
+                            <input type="time" name="opening_time" value="{{ $business->opening_time }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الإغلاق</label>
-                            <input type="time" name="closing_time" value="{{ $business->closing_time }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الإغلاق <span class="text-red-500">*</span></label>
+                            <input type="time" name="closing_time" value="{{ $business->closing_time }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                         </div>
                     </div>
                 </div>
