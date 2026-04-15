@@ -38,19 +38,22 @@
 
                     <!-- Description -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">الوصف</label>
-                        <textarea name="description" rows="3" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="تحدث عن منشأتك والخدمات التي تقدمها..."></textarea>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">الوصف <span class="text-red-500">*</span></label>
+                        <textarea name="description" rows="3" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="تحدث عن منشأتك والخدمات التي تقدمها..."></textarea>
                     </div>
                 </div>
             </div>
 
             <!-- Section 2: Location -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" 
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
                  x-data="{ 
                     governorateId: '{{ $governorates->first()?->id ?? '' }}',
-                    districtId: '', 
+                    districtId: '',
                     subAreas: [],
                     districts: {{ json_encode($governorates->first()?->districts ?? []) }},
+                    categoryId: '',
+                    subcategories: [],
+                    allCategories: {{ json_encode(Category::with('children')->whereNull('parent_id')->get()) }},
                     async updateDistricts() {
                         if(!this.governorateId) {
                             this.districts = [];
@@ -66,9 +69,13 @@
                         }
                         const response = await fetch(`/api/districts/${this.districtId}/sub-areas`);
                         this.subAreas = await response.json();
+                    },
+                    updateSubcategories() {
+                        const category = this.allCategories.find(c => c.id == this.categoryId);
+                        this.subcategories = category ? category.children : [];
                     }
                  }"
-                 x-init="$watch('governorateId', value => updateDistricts())">
+                 x-init="$watch('governorateId', value => updateDistricts()); $watch('categoryId', value => updateSubcategories())">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <h2 class="font-bold text-gray-800 flex items-center gap-2">
                         <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,9 +129,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Sub-area -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">الحي / المنطقة الفرعية</label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">الحي / المنطقة الفرعية <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="sub_area_id" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="sub_area_id" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر الحي...</option>
                                     <template x-for="area in subAreas" :key="area.id">
                                         <option :value="area.id" x-text="area.name"></option>
@@ -140,13 +147,13 @@
 
                         <!-- Category -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف الرئيسي <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="category_id" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="category_id" x-model="categoryId" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر التصنيف...</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @endforeach
+                                    <template x-for="category in allCategories" :key="category.id">
+                                        <option :value="category.id" x-text="category.name"></option>
+                                    </template>
                                 </select>
                                 <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,10 +164,35 @@
                         </div>
                     </div>
 
+                    <!-- Subcategory -->
+                    <div x-show="subcategories.length > 0">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف الفرعي</label>
+                        <div class="relative">
+                            <select name="subcategory_id" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <option value="">اختر التصنيف الفرعي...</option>
+                                <template x-for="subcategory in subcategories" :key="subcategory.id">
+                                    <option :value="subcategory.id" x-text="subcategory.name"></option>
+                                </template>
+                            </select>
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Detailed Address -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">العنوان التفصيلي</label>
-                        <input type="text" name="address" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="الشارع، المبنى، الطابق، بالقرب من...">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">العنوان التفصيلي <span class="text-red-500">*</span></label>
+                        <input type="text" name="address" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="الشارع، المبنى، الطابق، بالقرب من...">
+                    </div>
+
+                    <!-- Google Maps Link -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">رابط خرائط غوغل <span class="text-red-500">*</span></label>
+                        <input type="url" name="google_maps_link" dir="ltr" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://maps.google.com/...">
+                        <p class="text-xs text-gray-400 mt-2">انسخ رابط الموقع من خرائط غوغل والصقه هنا</p>
                     </div>
                 </div>
             </div>
@@ -193,12 +225,12 @@
                     <!-- Opening Hours -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الفتح</label>
-                            <input type="time" name="opening_time" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الفتح <span class="text-red-500">*</span></label>
+                            <input type="time" name="opening_time" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الإغلاق</label>
-                            <input type="time" name="closing_time" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الإغلاق <span class="text-red-500">*</span></label>
+                            <input type="time" name="closing_time" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                         </div>
                     </div>
                 </div>
@@ -217,8 +249,8 @@
                 <div class="p-6 space-y-6">
                     <!-- Logo -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">صورة شعار المنشأة</label>
-                        <input type="file" name="logo" accept="image/*" id="logoInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-green file:text-white hover:file:opacity-90">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">صورة شعار المنشأة <span class="text-red-500">*</span></label>
+                        <input type="file" name="logo" accept="image/*" id="logoInput" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-green file:text-white hover:file:opacity-90">
                         <div id="logoPreview" class="mt-4 relative hidden w-32 h-32">
                             <img src="" alt="Logo Preview" class="w-full h-full object-cover rounded-xl border-2 border-gray-200">
                             <button type="button" onclick="removeLogo()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm">×</button>
@@ -227,9 +259,9 @@
 
                     <!-- Additional Images -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">صور إضافية للمنشأة</label>
-                        <input type="file" name="images[]" accept="image/*" multiple id="imagesInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-                        <p class="text-xs text-gray-400 mt-2">يمكنك اختيار عدة صور (اضغط Ctrl للاختيار المتعدد)</p>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">صور إضافية للمنشأة <span class="text-red-500">*</span></label>
+                        <input type="file" name="images[]" accept="image/*" multiple id="imagesInput" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        <p class="text-xs text-gray-400 mt-2">مطلوب صورة واحدة على الأقل (يمكنك اختيار عدة صور - اضغط Ctrl للاختيار المتعدد)</p>
                         <div id="imagePreviews" class="mt-4 grid grid-cols-4 gap-3"></div>
                     </div>
                 </div>

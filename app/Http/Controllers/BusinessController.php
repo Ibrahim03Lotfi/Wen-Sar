@@ -93,16 +93,18 @@ class BusinessController extends Controller
 
     public function show(Business $business)
     {
-        // Only show approved businesses to public
+        // Only show approved businesses to public, unless user is the owner or admin
         if ($business->status !== 'approved') {
-            abort(404);
+            if (!auth()->check() || (auth()->id() !== $business->owner_id && !auth()->user()->hasRole('admin'))) {
+                abort(404);
+            }
         }
-        
+
         $business->increment('views_count');
         $business->load(['category', 'subArea', 'reviews' => function($query) {
             $query->latest()->with('user');
         }]);
-        
+
         return view('businesses.show', compact('business'));
     }
 

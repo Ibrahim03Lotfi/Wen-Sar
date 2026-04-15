@@ -173,13 +173,13 @@
         const splash = document.getElementById('splash-screen');
 
         // Check if splash was already shown
-        if (localStorage.getItem('splashShown')) {
+        if (localStorage.getItem('splashShownV2')) {
             splash.style.display = 'none';
             return;
         }
 
         // Mark splash as shown
-        localStorage.setItem('splashShown', 'true');
+        localStorage.setItem('splashShownV2', 'true');
         
         const tagline = document.getElementById('splash-tagline');
         const typingText = document.getElementById('typing-text');

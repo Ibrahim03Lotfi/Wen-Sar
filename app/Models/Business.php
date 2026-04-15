@@ -23,6 +23,7 @@ class Business extends Model
         'opening_time',
         'closing_time',
         'address',
+        'google_maps_link',
         'social_links',
         'is_featured',
         'featured_rank',

@@ -43,11 +43,11 @@
             </div>
             <div class="flex gap-3 md:gap-4 w-full md:w-auto mt-4 md:mt-0"
                  x-data="{ showLoginAlert: false, isAuth: {{ auth()->check() ? 'true' : 'false' }} }">
-                <button class="flex-grow md:flex-none flex items-center justify-center gap-2 md:gap-3 bg-brand-green text-white font-bold py-3 md:py-4 px-6 md:px-10 rounded-xl md:rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-brand-green/20 text-sm md:text-base">
+                <a href="tel:{{ $business->phone }}" class="flex-grow md:flex-none flex items-center justify-center gap-2 md:gap-3 bg-brand-green text-white font-bold py-3 md:py-4 px-6 md:px-10 rounded-xl md:rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-brand-green/20 text-sm md:text-base">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                     <span class="hidden sm:inline">اتصل الآن</span>
                     <span class="sm:hidden">اتصل</span>
-                </button>
+                </a>
                 @auth
                     @php($isFav = auth()->user()->favorites->contains($business->id))
                     <form action="{{ $isFav ? route('favorites.destroy', $business) : route('favorites.store', $business) }}" method="POST" class="inline">
@@ -258,6 +258,18 @@
                     </div>
                     @endif
 
+                    @if($business->google_maps_link)
+                    <div class="flex items-start gap-3 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-brand-white transition-colors">
+                         <div class="w-10 h-10 md:w-12 md:h-12 bg-green-50 text-green-600 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 font-bold">
+                             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                         </div>
+                         <div class="min-w-0 flex-1">
+                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">رابط خرائط غوغل</p>
+                             <a href="{{ $business->google_maps_link }}" target="_blank" class="font-bold text-brand-green text-sm md:text-base hover:underline truncate block" dir="ltr">افتح في خرائط غوغل</a>
+                         </div>
+                    </div>
+                    @endif
+
                     <div class="flex items-start gap-3 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-brand-white transition-colors">
                          <div class="w-10 h-10 md:w-12 md:h-12 bg-orange-50 text-orange-600 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 font-bold">
                              <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 0 1111.314 0z"></path></svg>
@@ -288,10 +300,17 @@
                     </div>
                 </div>
 
-                <button class="w-full bg-orange-500 text-white font-bold py-4 md:py-5 rounded-xl md:rounded-2xl hover:bg-orange-600 transition shadow-xl shadow-orange-200 flex items-center justify-center gap-2 text-sm md:text-base">
+                @if($business->google_maps_link)
+                <a href="{{ $business->google_maps_link }}" target="_blank" class="w-full bg-orange-500 text-white font-bold py-4 md:py-5 rounded-xl md:rounded-2xl hover:bg-orange-600 transition shadow-xl shadow-orange-200 flex items-center justify-center gap-2 text-sm md:text-base">
                     <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
                     الاتجاهات عبر الخرائط
+                </a>
+                @else
+                <button disabled class="w-full bg-gray-300 text-gray-500 font-bold py-4 md:py-5 rounded-xl md:rounded-2xl cursor-not-allowed flex items-center justify-center gap-2 text-sm md:text-base">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                    الاتجاهات عبر الخرائط (غير متوفر)
                 </button>
+                @endif
             </div>
 
         </div>

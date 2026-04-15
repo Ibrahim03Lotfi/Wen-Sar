@@ -32,17 +32,18 @@ class BusinessController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'english_name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'district_id' => 'required|exists:districts,id',
-            'sub_area_id' => 'nullable|exists:sub_areas,id',
+            'sub_area_id' => 'required|exists:sub_areas,id',
             'category_id' => 'required|exists:categories,id',
             'phone' => 'required|string|regex:/^09[0-9]{8}$/',
-            'opening_time' => 'nullable|date_format:H:i',
-            'closing_time' => 'nullable|date_format:H:i',
-            'address' => 'nullable|string|max:500',
-            'logo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
-            'images' => 'nullable|array|max:5',
-            'images.*' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
+            'opening_time' => 'required|date_format:H:i',
+            'closing_time' => 'required|date_format:H:i',
+            'address' => 'required|string|max:500',
+            'google_maps_link' => 'required|url|max:500',
+            'logo' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
+            'images' => 'required|array|min:1|max:5',
+            'images.*' => 'required|mimes:jpg,jpeg,png,webp|max:2048',
             'facebook' => 'nullable|url|max:255',
             'instagram' => 'nullable|url|max:255',
         ]);
@@ -56,14 +57,12 @@ class BusinessController extends Controller
         }
 
         // Handle images upload
-        if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('business_images', 'public');
-                $imagePaths[] = $path;
-            }
-            $validated['images'] = $imagePaths;
+        $imagePaths = [];
+        foreach ($request->file('images') as $image) {
+            $path = $image->store('business_images', 'public');
+            $imagePaths[] = $path;
         }
+        $validated['images'] = $imagePaths;
 
         // Handle social links
         $socialLinks = [];
@@ -105,16 +104,17 @@ class BusinessController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'english_name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'district_id' => 'required|exists:districts,id',
-            'sub_area_id' => 'nullable|exists:sub_areas,id',
+            'sub_area_id' => 'required|exists:sub_areas,id',
             'category_id' => 'required|exists:categories,id',
             'phone' => 'required|string|regex:/^09[0-9]{8}$/',
-            'opening_time' => 'nullable|date_format:H:i',
-            'closing_time' => 'nullable|date_format:H:i',
-            'address' => 'nullable|string|max:500',
+            'opening_time' => 'required|date_format:H:i',
+            'closing_time' => 'required|date_format:H:i',
+            'address' => 'required|string|max:500',
+            'google_maps_link' => 'required|url|max:500',
             'logo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
-            'images' => 'nullable|array|max:5',
+            'images' => 'nullable|array|min:1|max:5',
             'images.*' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
             'images_to_delete' => 'nullable|string',
             'facebook' => 'nullable|url|max:255',
