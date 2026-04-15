@@ -106,85 +106,98 @@ class BusinessController extends Controller
 
     public function update(Request $request, Business $business)
     {
-        $this->authorizeOwner($business);
+        try {
+            $this->authorizeOwner($business);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'english_name' => 'nullable|string|max:255',
-            'description' => 'required|string',
-            'district_id' => 'required|exists:districts,id',
-            'sub_area_id' => 'nullable|exists:sub_areas,id',
-            'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:categories,id',
-            'phone' => 'required|string|min:9|max:15',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'address' => 'required|string|max:500',
-            'google_maps_link' => 'nullable|url|max:500',
-            'logo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
-            'facebook' => 'nullable|url|max:255',
-            'instagram' => 'nullable|url|max:255',
-        ]);
+            \Log::info('Business update attempt', ['business_id' => $business->id, 'request_data' => $request->except(['logo', 'images'])]);
 
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
-            $validated['logo'] = $logoPath;
-        } else {
-            // Keep existing logo if not uploaded
-            $validated['logo'] = $business->logo;
-        }
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'english_name' => 'nullable|string|max:255',
+                'description' => 'required|string',
+                'district_id' => 'required|exists:districts,id',
+                'sub_area_id' => 'nullable|exists:sub_areas,id',
+                'category_id' => 'required|exists:categories,id',
+                'subcategory_id' => 'nullable|exists:categories,id',
+                'phone' => 'required|string|min:9|max:15',
+                'opening_time' => 'required|date_format:H:i',
+                'closing_time' => 'required|date_format:H:i',
+                'address' => 'required|string|max:500',
+                'google_maps_link' => 'nullable|url|max:500',
+                'logo' => 'nullable|mimes:jpg,jpeg,png,webp|max:2048',
+                'facebook' => 'nullable|url|max:255',
+                'instagram' => 'nullable|url|max:255',
+            ]);
 
-        // Use subcategory if provided, otherwise use main category
-        if ($request->filled('subcategory_id')) {
-            $validated['category_id'] = $request->subcategory_id;
-        }
-        unset($validated['subcategory_id']);
+            \Log::info('Validation passed', ['validated' => $validated]);
 
-        // Handle null sub_area_id
-        if (!$request->filled('sub_area_id')) {
-            unset($validated['sub_area_id']);
-        }
-
-        // Handle images upload
-        $currentImages = $business->images ?? [];
-        if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('business_images', 'public');
-                $imagePaths[] = $path;
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                $logoPath = $request->file('logo')->store('logos', 'public');
+                $validated['logo'] = $logoPath;
+            } else {
+                // Keep existing logo if not uploaded
+                $validated['logo'] = $business->logo;
             }
-            $currentImages = array_merge($currentImages, $imagePaths);
+
+            // Use subcategory if provided, otherwise use main category
+            if ($request->filled('subcategory_id')) {
+                $validated['category_id'] = $request->subcategory_id;
+            }
+            unset($validated['subcategory_id']);
+
+            // Handle null sub_area_id
+            if (!$request->filled('sub_area_id')) {
+                unset($validated['sub_area_id']);
+            }
+
+            // Handle images upload
+            $currentImages = $business->images ?? [];
+            if ($request->hasFile('images')) {
+                $imagePaths = [];
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('business_images', 'public');
+                    $imagePaths[] = $path;
+                }
+                $currentImages = array_merge($currentImages, $imagePaths);
+            }
+
+            // Handle images deletion
+            if ($request->filled('images_to_delete')) {
+                $imagesToDelete = json_decode($request->images_to_delete, true);
+                $currentImages = array_values(array_diff($currentImages, $imagesToDelete));
+            }
+
+            $validated['images'] = $currentImages;
+
+            // Remove fields that are not in the database
+            unset($validated['facebook'], $validated['instagram']);
+
+            // Handle social links
+            $socialLinks = $business->social_links ?? [];
+            if ($request->filled('facebook')) {
+                $socialLinks['facebook'] = $request->facebook;
+            } elseif ($request->has('facebook')) {
+                unset($socialLinks['facebook']);
+            }
+            if ($request->filled('instagram')) {
+                $socialLinks['instagram'] = $request->instagram;
+            } elseif ($request->has('instagram')) {
+                unset($socialLinks['instagram']);
+            }
+            $validated['social_links'] = $socialLinks;
+
+            \Log::info('Before update', ['validated' => $validated]);
+
+            $business->update($validated);
+
+            \Log::info('After update', ['business_id' => $business->id]);
+
+            return redirect()->route('owner.businesses.index')->with('success', 'تم تحديث البيانات بنجاح.');
+        } catch (\Exception $e) {
+            \Log::error('Business update failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return back()->withInput()->with('error', 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage());
         }
-
-        // Handle images deletion
-        if ($request->filled('images_to_delete')) {
-            $imagesToDelete = json_decode($request->images_to_delete, true);
-            $currentImages = array_values(array_diff($currentImages, $imagesToDelete));
-        }
-
-        $validated['images'] = $currentImages;
-
-        // Remove fields that are not in the database
-        unset($validated['facebook'], $validated['instagram']);
-
-        // Handle social links
-        $socialLinks = $business->social_links ?? [];
-        if ($request->filled('facebook')) {
-            $socialLinks['facebook'] = $request->facebook;
-        } elseif ($request->has('facebook')) {
-            unset($socialLinks['facebook']);
-        }
-        if ($request->filled('instagram')) {
-            $socialLinks['instagram'] = $request->instagram;
-        } elseif ($request->has('instagram')) {
-            unset($socialLinks['instagram']);
-        }
-        $validated['social_links'] = $socialLinks;
-
-        $business->update($validated);
-
-        return redirect()->route('owner.businesses.index')->with('success', 'تم تحديث البيانات بنجاح.');
     }
 
     private function authorizeOwner(Business $business)

@@ -23,8 +23,9 @@
     /* Hide body scroll and content behind splash */
     body.splash-active {
         overflow: hidden !important;
+        background-color: #06402b !important;
     }
-    
+
     body.splash-active #app,
     body.splash-active main,
     body.splash-active header {

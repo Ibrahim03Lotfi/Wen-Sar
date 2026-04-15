@@ -10,6 +10,46 @@
     </div>
 
     <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        @if($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="mr-3">
+                        <h3 class="text-sm font-medium text-red-800">حدث خطأ في الحفظ</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc pl-5 space-y-1">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="mr-3">
+                        <h3 class="text-sm font-medium text-red-800">حدث خطأ</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            {{ session('error') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <form action="{{ route('owner.businesses.update', $business->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
@@ -28,19 +68,19 @@
                     <!-- Name -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">اسم المنشأة <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" value="{{ $business->name }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                        <input type="text" name="name" value="{{ old('name', $business->name) }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
                     </div>
 
                     <!-- English Name -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">اسم المنشأة بالإنجليزي</label>
-                        <input type="text" name="english_name" dir="ltr" value="{{ $business->english_name }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant, Luxury Salon...">
+                        <input type="text" name="english_name" dir="ltr" value="{{ old('english_name', $business->english_name) }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant, Luxury Salon...">
                     </div>
 
                     <!-- Description -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">الوصف <span class="text-red-500">*</span></label>
-                        <textarea name="description" rows="3" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">{{ $business->description }}</textarea>
+                        <textarea name="description" rows="3" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">{{ old('description', $business->description) }}</textarea>
                     </div>
                 </div>
             </div>
@@ -53,7 +93,11 @@
                     subAreaId: '{{ $business->sub_area_id ?? '' }}',
                     subAreas: [],
                     districts: [],
-                    categoryId: '{{ $business->category->parent_id ?? $business->category_id ?? '' }}',
+                    @php
+                        $mainCategoryId = $business->category->parent_id ? $business->category->parent_id : $business->category_id;
+                        $isSubcategory = $business->category->parent_id ? true : false;
+                    @endphp
+                    categoryId: '{{ $mainCategoryId }}',
                     subcategories: [],
                     allCategories: {{ json_encode($categories) }},
                     async init() {
@@ -178,7 +222,7 @@
                             <select name="subcategory_id" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                 <option value="">اختر التصنيف الفرعي...</option>
                                 <template x-for="subcategory in subcategories" :key="subcategory.id">
-                                    <option :value="subcategory.id" x-text="subcategory.name"></option>
+                                    <option :value="subcategory.id" x-text="subcategory.name" :selected="subcategory.id == {{ $business->category_id }}"></option>
                                 </template>
                             </select>
                             <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
