@@ -171,6 +171,15 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const splash = document.getElementById('splash-screen');
+
+        // Check if splash was already shown in this session
+        if (sessionStorage.getItem('splashShown')) {
+            splash.style.display = 'none';
+            return;
+        }
+
+        // Mark splash as shown for this session
+        sessionStorage.setItem('splashShown', 'true');
         
         const tagline = document.getElementById('splash-tagline');
         const typingText = document.getElementById('typing-text');

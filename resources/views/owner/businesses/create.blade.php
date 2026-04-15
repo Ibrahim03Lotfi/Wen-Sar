@@ -190,8 +190,8 @@
 
                     <!-- Google Maps Link -->
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">رابط خرائط غوغل <span class="text-red-500">*</span></label>
-                        <input type="url" name="google_maps_link" dir="ltr" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://maps.google.com/...">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">رابط خرائط غوغل</label>
+                        <input type="url" name="google_maps_link" dir="ltr" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://maps.google.com/...">
                         <p class="text-xs text-gray-400 mt-2">انسخ رابط الموقع من خرائط غوغل والصقه هنا</p>
                     </div>
                 </div>
