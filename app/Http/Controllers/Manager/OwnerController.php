@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class OwnerController extends Controller
 {
@@ -38,6 +39,23 @@ class OwnerController extends Controller
         }]);
 
         return view('manager.owners.show', compact('user'));
+    }
+
+    public function updatePassword(Request $request, User $user)
+    {
+        // Ensure user is an owner
+        if (!$user->hasRole('owner')) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        return back()->with('success', __('Password updated successfully.'));
     }
 
     public function destroy(User $user)

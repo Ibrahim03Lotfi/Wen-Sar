@@ -46,6 +46,51 @@
     </div>
 </div>
 
+<!-- Change Password -->
+<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <h3 class="font-bold text-gray-800 mb-4">{{ __('Change Password') }}</h3>
+    @if($errors->any())
+        <div class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="mr-3">
+                    <h3 class="text-sm font-medium text-red-800">{{ __('Error') }}</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <ul class="list-disc pl-5 space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+    <form method="POST" action="{{ route('manager.owners.update-password', $user) }}">
+        @csrf
+        @method('PUT')
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('New Password') }} <span class="text-red-500">*</span></label>
+                <input type="password" name="password" required minlength="8" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="••••••••">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Confirm Password') }} <span class="text-red-500">*</span></label>
+                <input type="password" name="password_confirmation" required minlength="8" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="••••••••">
+            </div>
+        </div>
+        <div class="mt-4">
+            <button type="submit" class="bg-brand-green text-white px-6 py-2 rounded-lg hover:opacity-90 transition-all font-bold">
+                {{ __('Update Password') }}
+            </button>
+        </div>
+    </form>
+</div>
+
 <!-- Owner's Businesses -->
 <div class="bg-white rounded-xl shadow-sm">
     <div class="p-6 border-b border-gray-100">

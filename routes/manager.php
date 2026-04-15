@@ -45,6 +45,7 @@ Route::prefix('manager')->name('manager.')->group(function () {
         // Business Owners
         Route::get('/owners', [OwnerController::class, 'index'])->name('owners.index');
         Route::get('/owners/{user}', [OwnerController::class, 'show'])->name('owners.show');
+        Route::put('/owners/{user}/password', [OwnerController::class, 'updatePassword'])->name('owners.update-password');
         Route::delete('/owners/{user}', [OwnerController::class, 'destroy'])->name('owners.destroy');
 
         // All Businesses (approved)
