@@ -239,7 +239,7 @@
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Additional Images') }}</label>
                 <input type="file" name="images[]" accept="image/*" multiple id="imagesInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-                <p class="text-xs text-gray-400 mt-2">{{ __('You can select multiple images - Max 14 images (images will be auto-compressed)') }}</p>
+                <p class="text-xs text-gray-400 mt-2">{{ __('Max 6 images, 1MB each (server limit)') }}</p>
                 <div id="imagePreviews" class="mt-4 grid grid-cols-4 gap-3"></div>
             </div>
         </div>

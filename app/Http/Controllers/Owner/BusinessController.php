@@ -52,9 +52,9 @@ class BusinessController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
-                'logo' => 'required|image|max:20480',
-                'images' => 'required|array|min:1|max:14',
-                'images.*' => 'required|image|max:20480',
+                'logo' => 'required|image|max:2048',
+                'images' => 'required|array|min:1|max:6',
+                'images.*' => 'required|image|max:1024',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
@@ -147,7 +147,7 @@ class BusinessController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
-                'logo' => 'nullable|image|max:20480',
+                'logo' => 'nullable|image|max:2048',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
