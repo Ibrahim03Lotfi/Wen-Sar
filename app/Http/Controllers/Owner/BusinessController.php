@@ -53,8 +53,8 @@ class BusinessController extends Controller
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
                 'logo' => 'required|image|max:2048',
-                'images' => 'required|array|min:1|max:6',
-                'images.*' => 'required|image|max:1024',
+                'images' => 'required|array|min:1|max:3',
+                'images.*' => 'required|image|max:2048',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
@@ -148,6 +148,8 @@ class BusinessController extends Controller
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
                 'logo' => 'nullable|image|max:2048',
+                'images' => 'nullable|array|max:3',
+                'images.*' => 'nullable|image|max:2048',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
