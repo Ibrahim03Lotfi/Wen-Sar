@@ -68,7 +68,7 @@
     </div>
 </div>
 
-<form action="{{ route('manager.businesses.store-for-owner', $user) }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ governorateId: '{{ old('district_id') ? \App\Models\District::find(old('district_id'))?->governorate_id : '' }}', districtId: '{{ old('district_id') }}', subAreas: [], districts: [], async updateDistricts() { if(!this.governorateId) { this.districts = []; return; } const response = await fetch(`/api/governorates/${this.governorateId}/districts`); this.districts = await response.json(); }, async updateSubAreas() { if(!this.districtId) { this.subAreas = []; return; } const response = await fetch(`/api/districts/${this.districtId}/sub-areas`); this.subAreas = await response.json(); } }" x-init="$watch('governorateId', value => updateDistricts())">
+<form action="{{ route('manager.businesses.store-for-owner', $user) }}" method="POST" enctype="multipart/form-data" class="space-y-6" x-data="{ governorateId: '{{ old('district_id') ? \App\Models\District::find(old('district_id'))?->governorate_id : '' }}', districtId: '{{ old('district_id') }}', subAreas: [], districts: [], async updateDistricts() { if(!this.governorateId) { this.districts = []; return; } const response = await fetch(`/api/governorates/${this.governorateId}/districts`); this.districts = await response.json(); }, async updateSubAreas() { if(!this.districtId) { this.subAreas = []; return; } const response = await fetch(`/api/districts/${this.districtId}/sub-areas`); this.subAreas = await response.json(); } }" x-init="$watch('governorateId', value => updateDistricts()); $watch('districtId', value => updateSubAreas())">
     @csrf
 
     <!-- Section 1: Basic Information -->
@@ -129,7 +129,7 @@
                 <!-- District -->
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('District') }} <span class="text-red-500">*</span></label>
-                    <select name="district_id" x-model="districtId" @change="updateSubAreas()" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
+                    <select name="district_id" x-model="districtId" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
                         <option value="">{{ __('Select District...') }}</option>
                         <template x-for="district in districts" :key="district.id">
                             <option :value="district.id" x-text="district.name" :selected="district.id == {{ old('district_id') }}"></option>
@@ -200,21 +200,13 @@
                 </div>
             </div>
 
-            <!-- Opening Hours -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Opening Time') }}</label>
-                    <input type="time" name="opening_time" value="{{ old('opening_time') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Closing Time') }}</label>
-                    <input type="time" name="closing_time" value="{{ old('closing_time') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Section 4: Images -->
+    <!-- Section 4: Business Hours -->
+    <x-business-hours :business="null" />
+
+    <!-- Section 5: Images -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 class="font-bold text-gray-800 flex items-center gap-2">

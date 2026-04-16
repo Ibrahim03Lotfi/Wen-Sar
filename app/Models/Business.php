@@ -22,6 +22,7 @@ class Business extends Model
         'phone',
         'opening_time',
         'closing_time',
+        'business_hours',
         'address',
         'google_maps_link',
         'social_links',
@@ -37,6 +38,7 @@ class Business extends Model
     protected $casts = [
         'images' => 'array',
         'social_links' => 'array',
+        'business_hours' => 'array',
         'is_featured' => 'boolean',
         'approved_at' => 'datetime',
         'contract_ends_at' => 'datetime',

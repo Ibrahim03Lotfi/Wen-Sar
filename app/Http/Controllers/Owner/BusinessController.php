@@ -120,6 +120,17 @@ class BusinessController extends Controller
             }
             $validated['social_links'] = $socialLinks;
 
+            // Handle business hours
+            $businessHours = [
+                'regular' => [
+                    'open' => $request->opening_time,
+                    'close' => $request->closing_time,
+                ],
+                'closed_days' => $request->closed_days ?? [],
+                'overrides' => $request->overrides ?? [],
+            ];
+            $validated['business_hours'] = $businessHours;
+
             $validated['status'] = 'pending';
 
             \Log::info('Before store', ['validated' => $validated]);

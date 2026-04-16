@@ -190,12 +190,18 @@ class BusinessController extends Controller
             if ($request->filled('instagram')) {
                 $socialLinks['instagram'] = $request->instagram;
             }
-            if (!empty($socialLinks)) {
-                $validated['social_links'] = $socialLinks;
-            }
+            $validated['social_links'] = $socialLinks;
 
-            // Remove fields that are not in the database
-            unset($validated['facebook'], $validated['instagram']);
+            // Handle business hours
+            $businessHours = [
+                'regular' => [
+                    'open' => $request->opening_time,
+                    'close' => $request->closing_time,
+                ],
+                'closed_days' => $request->closed_days ?? [],
+                'overrides' => $request->overrides ?? [],
+            ];
+            $validated['business_hours'] = $businessHours;
 
             Business::create($validated);
 

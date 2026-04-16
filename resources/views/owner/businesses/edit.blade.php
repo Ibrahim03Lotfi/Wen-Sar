@@ -126,7 +126,7 @@
                         this.subcategories = category ? category.subcategories : [];
                     }
                  }"
-                 x-init="init(); $watch('categoryId', value => updateSubcategories())">
+                 x-init="init(); $watch('governorateId', value => updateDistricts()); $watch('districtId', value => updateSubAreas()); $watch('categoryId', value => updateSubcategories())">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <h2 class="font-bold text-gray-800 flex items-center gap-2">
                         <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">المحافظة <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="governorate_id" x-model="governorateId" @change="updateDistricts()" required 
+                                <select name="governorate_id" x-model="governorateId" required
                                         class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر المحافظة...</option>
                                     @foreach($governorates as $governorate)
@@ -161,7 +161,7 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">المنطقة <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="district_id" x-model="districtId" @change="updateSubAreas()" required 
+                                <select name="district_id" x-model="districtId" required
                                         class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر المنطقة...</option>
                                     <template x-for="district in districts" :key="district.id">
@@ -279,21 +279,13 @@
                         <p class="text-xs text-gray-400 mt-2">مثال: <span class="font-bold text-gray-600">09</span><span class="text-gray-400">12345678</span></p>
                     </div>
 
-                    <!-- Opening Hours -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الفتح <span class="text-red-500">*</span></label>
-                            <input type="time" name="opening_time" value="{{ $business->opening_time }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">وقت الإغلاق <span class="text-red-500">*</span></label>
-                            <input type="time" name="closing_time" value="{{ $business->closing_time }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- Section 4: Images -->
+            <!-- Section 4: Business Hours -->
+            <x-business-hours :business="$business" />
+
+            <!-- Section 5: Images -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <h2 class="font-bold text-gray-800 flex items-center gap-2">
