@@ -50,6 +50,34 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'role:owner'])
     ->name('dashboard');
 
+// Storage debug route
+Route::get('/debug/storage', function () {
+    $storagePath = storage_path('app/public');
+    $publicStoragePath = public_path('storage');
+    $logosPath = storage_path('app/public/logos');
+    $imagesPath = storage_path('app/public/business_images');
+
+    $isSymlink = is_link($publicStoragePath);
+    $symlinkTarget = $isSymlink ? readlink($publicStoragePath) : 'N/A';
+
+    $logos = is_dir($logosPath) ? array_slice(scandir($logosPath), 0, 10) : [];
+    $images = is_dir($imagesPath) ? array_slice(scandir($imagesPath), 0, 10) : [];
+
+    return response()->json([
+        'app_url' => config('app.url'),
+        'storage_path' => $storagePath,
+        'public_storage_path' => $publicStoragePath,
+        'is_symlink' => $isSymlink,
+        'symlink_target' => $symlinkTarget,
+        'storage_exists' => is_dir($storagePath),
+        'logos_exists' => is_dir($logosPath),
+        'images_exists' => is_dir($imagesPath),
+        'sample_logos' => $logos,
+        'sample_images' => $images,
+        'writable' => is_writable($storagePath),
+    ]);
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
