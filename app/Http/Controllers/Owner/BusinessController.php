@@ -10,7 +10,6 @@ use App\Models\Governorate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 
 class BusinessController extends Controller
 {
@@ -70,24 +69,15 @@ class BusinessController extends Controller
             }
             unset($validated['subcategory_id']);
 
-            // Handle logo upload with compression
-            $logoFile = $request->file('logo');
-            $logoPath = 'logos/' . time() . '_' . uniqid() . '.jpg';
-            $compressedLogo = Image::read($logoFile)
-                ->scale(width: 800)
-                ->encodeByExtension('jpg', quality: 85);
-            Storage::disk('public')->put($logoPath, $compressedLogo);
+            // Handle logo upload
+            $logoPath = $request->file('logo')->store('logos', 'public');
             $validated['logo'] = $logoPath;
 
-            // Handle images upload with compression
+            // Handle images upload
             $imagePaths = [];
             foreach ($request->file('images') as $image) {
-                $imagePath = 'business_images/' . time() . '_' . uniqid() . '.jpg';
-                $compressedImage = Image::read($image)
-                    ->scale(width: 1200)
-                    ->encodeByExtension('jpg', quality: 80);
-                Storage::disk('public')->put($imagePath, $compressedImage);
-                $imagePaths[] = $imagePath;
+                $path = $image->store('business_images', 'public');
+                $imagePaths[] = $path;
             }
             $validated['images'] = $imagePaths;
 
@@ -164,14 +154,9 @@ class BusinessController extends Controller
 
             \Log::info('Validation passed', ['validated' => $validated]);
 
-            // Handle logo upload with compression
+            // Handle logo upload
             if ($request->hasFile('logo')) {
-                $logoFile = $request->file('logo');
-                $logoPath = 'logos/' . time() . '_' . uniqid() . '.jpg';
-                $compressedLogo = Image::read($logoFile)
-                    ->scale(width: 800)
-                    ->encodeByExtension('jpg', quality: 85);
-                Storage::disk('public')->put($logoPath, $compressedLogo);
+                $logoPath = $request->file('logo')->store('logos', 'public');
                 $validated['logo'] = $logoPath;
             } else {
                 // Keep existing logo if not uploaded
@@ -189,17 +174,13 @@ class BusinessController extends Controller
                 unset($validated['sub_area_id']);
             }
 
-            // Handle images upload with compression
+            // Handle images upload
             $currentImages = $business->images ?? [];
             if ($request->hasFile('images')) {
                 $imagePaths = [];
                 foreach ($request->file('images') as $image) {
-                    $imagePath = 'business_images/' . time() . '_' . uniqid() . '.jpg';
-                    $compressedImage = Image::read($image)
-                        ->scale(width: 1200)
-                        ->encodeByExtension('jpg', quality: 80);
-                    Storage::disk('public')->put($imagePath, $compressedImage);
-                    $imagePaths[] = $imagePath;
+                    $path = $image->store('business_images', 'public');
+                    $imagePaths[] = $path;
                 }
                 $currentImages = array_merge($currentImages, $imagePaths);
             }
