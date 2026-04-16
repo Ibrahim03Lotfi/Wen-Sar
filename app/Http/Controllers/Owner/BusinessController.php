@@ -10,6 +10,7 @@ use App\Models\Governorate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class BusinessController extends Controller
 {
@@ -52,9 +53,9 @@ class BusinessController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
-                'logo' => 'required|image|max:10240',
-                'images' => 'required|array|min:1|max:5',
-                'images.*' => 'required|image|max:10240',
+                'logo' => 'required|image|max:20480',
+                'images' => 'required|array|min:1|max:14',
+                'images.*' => 'required|image|max:20480',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
@@ -69,15 +70,24 @@ class BusinessController extends Controller
             }
             unset($validated['subcategory_id']);
 
-            // Handle logo upload
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            // Handle logo upload with compression
+            $logoFile = $request->file('logo');
+            $logoPath = 'logos/' . time() . '_' . uniqid() . '.jpg';
+            $compressedLogo = Image::read($logoFile)
+                ->scale(width: 800)
+                ->encodeByExtension('jpg', quality: 85);
+            Storage::disk('public')->put($logoPath, $compressedLogo);
             $validated['logo'] = $logoPath;
 
-            // Handle images upload
+            // Handle images upload with compression
             $imagePaths = [];
             foreach ($request->file('images') as $image) {
-                $path = $image->store('business_images', 'public');
-                $imagePaths[] = $path;
+                $imagePath = 'business_images/' . time() . '_' . uniqid() . '.jpg';
+                $compressedImage = Image::read($image)
+                    ->scale(width: 1200)
+                    ->encodeByExtension('jpg', quality: 80);
+                Storage::disk('public')->put($imagePath, $compressedImage);
+                $imagePaths[] = $imagePath;
             }
             $validated['images'] = $imagePaths;
 
@@ -147,16 +157,21 @@ class BusinessController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
-                'logo' => 'nullable|image|max:10240',
+                'logo' => 'nullable|image|max:20480',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
 
             \Log::info('Validation passed', ['validated' => $validated]);
 
-            // Handle logo upload
+            // Handle logo upload with compression
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('logos', 'public');
+                $logoFile = $request->file('logo');
+                $logoPath = 'logos/' . time() . '_' . uniqid() . '.jpg';
+                $compressedLogo = Image::read($logoFile)
+                    ->scale(width: 800)
+                    ->encodeByExtension('jpg', quality: 85);
+                Storage::disk('public')->put($logoPath, $compressedLogo);
                 $validated['logo'] = $logoPath;
             } else {
                 // Keep existing logo if not uploaded
@@ -174,13 +189,17 @@ class BusinessController extends Controller
                 unset($validated['sub_area_id']);
             }
 
-            // Handle images upload
+            // Handle images upload with compression
             $currentImages = $business->images ?? [];
             if ($request->hasFile('images')) {
                 $imagePaths = [];
                 foreach ($request->file('images') as $image) {
-                    $path = $image->store('business_images', 'public');
-                    $imagePaths[] = $path;
+                    $imagePath = 'business_images/' . time() . '_' . uniqid() . '.jpg';
+                    $compressedImage = Image::read($image)
+                        ->scale(width: 1200)
+                        ->encodeByExtension('jpg', quality: 80);
+                    Storage::disk('public')->put($imagePath, $compressedImage);
+                    $imagePaths[] = $imagePath;
                 }
                 $currentImages = array_merge($currentImages, $imagePaths);
             }
