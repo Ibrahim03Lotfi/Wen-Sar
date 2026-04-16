@@ -63,6 +63,9 @@ Route::get('/debug/storage', function () {
     $logos = is_dir($logosPath) ? array_slice(scandir($logosPath), 0, 10) : [];
     $images = is_dir($imagesPath) ? array_slice(scandir($imagesPath), 0, 10) : [];
 
+    // Check database for image paths
+    $businesses = \App\Models\Business::select('id', 'name', 'logo', 'images')->limit(5)->get();
+
     return response()->json([
         'app_url' => config('app.url'),
         'storage_path' => $storagePath,
@@ -75,6 +78,7 @@ Route::get('/debug/storage', function () {
         'sample_logos' => $logos,
         'sample_images' => $images,
         'writable' => is_writable($storagePath),
+        'businesses_in_db' => $businesses,
     ]);
 });
 
