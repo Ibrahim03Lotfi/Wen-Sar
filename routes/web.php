@@ -66,6 +66,36 @@ Route::get('/debug/storage', function () {
     // Check database for image paths
     $businesses = \App\Models\Business::select('id', 'name', 'logo', 'images')->limit(5)->get();
 
+    // Check if specific files exist
+    $fileChecks = [];
+    foreach ($businesses as $biz) {
+        if ($biz->logo) {
+            $fileChecks[$biz->logo] = [
+                'exists' => file_exists(storage_path('app/public/' . $biz->logo)),
+                'full_path' => storage_path('app/public/' . $biz->logo),
+            ];
+        }
+        if ($biz->images) {
+            foreach ($biz->images as $img) {
+                $fileChecks[$img] = [
+                    'exists' => file_exists(storage_path('app/public/' . $img)),
+                    'full_path' => storage_path('app/public/' . $img),
+                ];
+            }
+        }
+    }
+
+    // Search for any jpg files in storage
+    $allJpg = [];
+    if (is_dir($storagePath)) {
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($storagePath));
+        foreach ($iterator as $file) {
+            if ($file->isFile() && in_array(strtolower($file->getExtension()), ['jpg', 'jpeg', 'png'])) {
+                $allJpg[] = str_replace($storagePath, '', $file->getPathname());
+            }
+        }
+    }
+
     return response()->json([
         'app_url' => config('app.url'),
         'storage_path' => $storagePath,
@@ -79,6 +109,8 @@ Route::get('/debug/storage', function () {
         'sample_images' => $images,
         'writable' => is_writable($storagePath),
         'businesses_in_db' => $businesses,
+        'file_checks' => $fileChecks,
+        'all_jpg_files_found' => $allJpg,
     ]);
 });
 
