@@ -145,7 +145,16 @@
                                     <div class="flex-1">
                                         <div class="flex items-start justify-between">
                                             <div>
-                                                <h3 class="font-bold text-lg text-gray-800">{{ $business->name }}</h3>
+                                                <div class="flex items-center gap-2">
+                                                    <h3 class="font-bold text-lg text-gray-800">{{ $business->name }}</h3>
+                                                    @if($business->status === 'pending')
+                                                        <span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs font-bold">بانتظار الموافقة</span>
+                                                    @elseif($business->status === 'approved')
+                                                        <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-bold">مقبول</span>
+                                                    @elseif($business->status === 'rejected')
+                                                        <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-bold">مرفوض</span>
+                                                    @endif
+                                                </div>
                                                 <p class="text-gray-500 text-sm mt-1">{{ $business->category->name }} • {{ $business->subArea?->name ?? 'غير محدد' }}</p>
                                                 <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
                                                     <span class="flex items-center gap-1">
