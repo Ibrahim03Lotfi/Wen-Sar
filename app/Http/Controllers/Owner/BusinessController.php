@@ -70,14 +70,40 @@ class BusinessController extends Controller
             unset($validated['subcategory_id']);
 
             // Handle logo upload
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            $logoFile = $request->file('logo');
+            \Log::info('Logo upload attempt', [
+                'original_name' => $logoFile->getClientOriginalName(),
+                'size' => $logoFile->getSize(),
+                'mime' => $logoFile->getMimeType(),
+                'temp_path' => $logoFile->getRealPath(),
+            ]);
+
+            $logoPath = $logoFile->store('logos', 'public');
             $validated['logo'] = $logoPath;
+
+            \Log::info('Logo stored', [
+                'stored_path' => $logoPath,
+                'full_path' => storage_path('app/public/' . $logoPath),
+                'exists_after_store' => file_exists(storage_path('app/public/' . $logoPath)),
+            ]);
 
             // Handle images upload
             $imagePaths = [];
-            foreach ($request->file('images') as $image) {
+            foreach ($request->file('images') as $index => $image) {
+                \Log::info('Image upload attempt', [
+                    'index' => $index,
+                    'original_name' => $image->getClientOriginalName(),
+                    'size' => $image->getSize(),
+                ]);
+
                 $path = $image->store('business_images', 'public');
                 $imagePaths[] = $path;
+
+                \Log::info('Image stored', [
+                    'index' => $index,
+                    'stored_path' => $path,
+                    'exists_after_store' => file_exists(storage_path('app/public/' . $path)),
+                ]);
             }
             $validated['images'] = $imagePaths;
 

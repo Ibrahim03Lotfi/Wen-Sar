@@ -50,6 +50,17 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'role:owner'])
     ->name('dashboard');
 
+// View recent logs
+Route::get('/debug/logs', function () {
+    $logFile = storage_path('logs/laravel.log');
+    if (!file_exists($logFile)) {
+        return response()->json(['error' => 'Log file not found']);
+    }
+    $lines = file($logFile);
+    $recent = array_slice($lines, -50); // Last 50 lines
+    return response()->json(['recent_logs' => implode('', $recent)]);
+});
+
 // Storage debug route
 Route::get('/debug/storage', function () {
     $storagePath = storage_path('app/public');
