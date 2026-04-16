@@ -348,45 +348,60 @@
 </div>
 
 <script>
-    // Logo preview
-    document.getElementById('logoInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Logo preview
+        const logoInput = document.getElementById('logoInput');
+        if (logoInput) {
+            logoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const preview = document.getElementById('logoPreview');
+                    if (preview) {
+                        const img = preview.querySelector('img');
+                        if (img) img.src = URL.createObjectURL(file);
+                        preview.classList.remove('hidden');
+                    }
+                }
+            });
+        }
+
+        window.removeLogo = function() {
             const preview = document.getElementById('logoPreview');
-            const img = preview.querySelector('img');
-            img.src = URL.createObjectURL(file);
-            preview.classList.remove('hidden');
+            const input = document.getElementById('logoInput');
+            if (preview) preview.classList.add('hidden');
+            if (input) input.value = '';
+        };
+
+        // Images preview
+        const imagesInput = document.getElementById('imagesInput');
+        if (imagesInput) {
+            imagesInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                const container = document.getElementById('imagePreviews');
+                if (container) {
+                    container.innerHTML = '';
+                    for (let file of files) {
+                        const div = document.createElement('div');
+                        div.className = 'relative group';
+                        div.innerHTML = `
+                            <img src="${URL.createObjectURL(file)}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition">
+                            <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm">×</button>
+                        `;
+                        container.appendChild(div);
+                    }
+                }
+            });
         }
-    });
 
-    function removeLogo() {
-        const preview = document.getElementById('logoPreview');
-        const input = document.getElementById('logoInput');
-        preview.classList.add('hidden');
-        input.value = '';
-    }
-
-    // Images preview
-    document.getElementById('imagesInput').addEventListener('change', function(e) {
-        const files = e.target.files;
-        const container = document.getElementById('imagePreviews');
-        container.innerHTML = '';
-        
-        for (let file of files) {
-            const div = document.createElement('div');
-            div.className = 'relative group';
-            div.innerHTML = `
-                <img src="${URL.createObjectURL(file)}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition">
-                <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm">×</button>
-            `;
-            container.appendChild(div);
+        // Phone preview update
+        const phoneInput = document.getElementById('phoneInput');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                const val = e.target.value;
+                const preview = document.getElementById('phonePreview');
+                if (preview) preview.textContent = val;
+            });
         }
-    });
-
-    // Phone preview update
-    document.getElementById('phoneInput').addEventListener('input', function(e) {
-        const val = e.target.value;
-        document.getElementById('phonePreview').textContent = val;
     });
 </script>
 @endsection

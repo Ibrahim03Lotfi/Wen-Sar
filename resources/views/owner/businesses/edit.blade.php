@@ -379,58 +379,73 @@
 </div>
 
 <script>
-    document.getElementById('logoInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
+    document.addEventListener('DOMContentLoaded', function() {
+        const logoInput = document.getElementById('logoInput');
+        if (logoInput) {
+            logoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const preview = document.getElementById('logoPreview');
+                    if (preview) {
+                        const img = preview.querySelector('img');
+                        if (img) img.src = URL.createObjectURL(file);
+                        preview.classList.remove('hidden');
+                    }
+                    const existing = document.getElementById('existingLogo');
+                    if (existing) existing.remove();
+                }
+            });
+        }
+
+        window.removeLogo = function() {
             const preview = document.getElementById('logoPreview');
-            const img = preview.querySelector('img');
-            img.src = URL.createObjectURL(file);
-            preview.classList.remove('hidden');
+            const input = document.getElementById('logoInput');
+            if (preview) preview.classList.add('hidden');
+            if (input) input.value = '';
+        };
+
+        window.deleteExistingLogo = function() {
             const existing = document.getElementById('existingLogo');
             if (existing) existing.remove();
+        };
+
+        const imagesInput = document.getElementById('imagesInput');
+        if (imagesInput) {
+            imagesInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                const container = document.getElementById('imagePreviews');
+                if (container) {
+                    for (let file of files) {
+                        const div = document.createElement('div');
+                        div.className = 'relative group new-image';
+                        const img = document.createElement('img');
+                        img.src = URL.createObjectURL(file);
+                        img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition';
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.textContent = '×';
+                        btn.className = 'absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm';
+                        btn.onclick = function() { div.remove(); };
+                        div.appendChild(img);
+                        div.appendChild(btn);
+                        container.appendChild(div);
+                    }
+                }
+            });
         }
+
+        window.deleteExistingImage = function(button) {
+            const container = button.parentElement;
+            if (!container) return;
+            const imagePath = container.dataset.path;
+            const imagesToDelete = document.getElementById('imagesToDelete');
+            if (imagesToDelete) {
+                const current = imagesToDelete.value ? JSON.parse(imagesToDelete.value) : [];
+                current.push(imagePath);
+                imagesToDelete.value = JSON.stringify(current);
+            }
+            container.remove();
+        };
     });
-
-    function removeLogo() {
-        const preview = document.getElementById('logoPreview');
-        const input = document.getElementById('logoInput');
-        preview.classList.add('hidden');
-        input.value = '';
-    }
-
-    function deleteExistingLogo() {
-        document.getElementById('existingLogo').remove();
-    }
-
-    document.getElementById('imagesInput').addEventListener('change', function(e) {
-        const files = e.target.files;
-        const container = document.getElementById('imagePreviews');
-        
-        for (let file of files) {
-            const div = document.createElement('div');
-            div.className = 'relative group new-image';
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-            img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition';
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.textContent = '×';
-            btn.className = 'absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm';
-            btn.onclick = function() { div.remove(); };
-            div.appendChild(img);
-            div.appendChild(btn);
-            container.appendChild(div);
-        }
-    });
-
-    function deleteExistingImage(button) {
-        const container = button.parentElement;
-        const imagePath = container.dataset.path;
-        const imagesToDelete = document.getElementById('imagesToDelete');
-        const current = imagesToDelete.value ? JSON.parse(imagesToDelete.value) : [];
-        current.push(imagePath);
-        imagesToDelete.value = JSON.stringify(current);
-        container.remove();
-    }
 </script>
 @endsection
