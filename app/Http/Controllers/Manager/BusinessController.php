@@ -166,7 +166,7 @@ class BusinessController extends Controller
                 'closing_time' => 'nullable|date_format:H:i',
                 'address' => 'nullable|string|max:500',
                 'logo' => 'nullable|image|max:2048',
-                'images' => 'nullable|array|max:3',
+                'images' => 'nullable|array|max:16',
                 'images.*' => 'nullable|image|max:2048',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',

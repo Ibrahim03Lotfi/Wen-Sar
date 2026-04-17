@@ -22,12 +22,16 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'username' => 'required|string',
+            'username' => 'required|string|max:255',
             'password_1' => 'required|string',
             'password_2' => 'required|string',
         ]);
 
-        $manager = Manager::where('username', $request->username)
+        // Sanitize username to prevent XSS
+        $username = strip_tags($request->username);
+        $username = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
+
+        $manager = Manager::where('username', $username)
                          ->where('is_active', true)
                          ->first();
 
@@ -86,14 +90,20 @@ class AuthController extends Controller
             'password_2' => 'required|string|min:8|confirmed',
         ]);
 
+        // Sanitize inputs to prevent XSS
+        $name = strip_tags($request->name);
+        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $username = strip_tags($request->username);
+        $username = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
+
         // Ensure passwords are different
         if ($request->password_1 === $request->password_2) {
             return back()->withErrors(['password_2' => __('The two passwords must be different for security.')])->withInput();
         }
 
         $manager = Manager::create([
-            'name' => $request->name,
-            'username' => $request->username,
+            'name' => $name,
+            'username' => $username,
             'password_1' => Hash::make($request->password_1),
             'password_2' => Hash::make($request->password_2),
             'is_active' => true,

@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Route;
 // Public manager routes
 Route::prefix('manager')->name('manager.')->group(function () {
     // Setup (only when no managers exist) - Rate limited
-    Route::get('/setup', [AuthController::class, 'showSetupForm'])->name('setup');
-    Route::post('/setup', [AuthController::class, 'setup'])->middleware('throttle:manager');
+    Route::get('/setup', [AuthController::class, 'showSetupForm'])->middleware('no.managers')->name('setup');
+    Route::post('/setup', [AuthController::class, 'setup'])->middleware('no.managers', 'throttle:manager');
 
     // Login - Rate limited
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

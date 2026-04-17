@@ -334,7 +334,7 @@
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">صور إضافية للمنشأة</label>
                         <input type="file" name="images[]" accept="image/*" multiple id="imagesInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-                        <p class="text-xs text-gray-400 mt-2">يمكنك اختيار عدة صور - الحد الأقصى 3 صور، كل صورة بحد أقصى 2 ميغابايت</p>
+                        <p class="text-xs text-gray-400 mt-2">يمكنك اختيار عدة صور - الحد الأقصى 16 صور، كل صورة بحد أقصى 2 ميغابايت</p>
                         <div id="imagePreviews" class="mt-4 grid grid-cols-4 gap-3">
                             @if($business->images && count($business->images) > 0)
                                 @foreach($business->images as $index => $image)
