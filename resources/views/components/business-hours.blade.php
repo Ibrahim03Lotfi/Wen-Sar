@@ -15,14 +15,21 @@ $regularOpen = $businessHours['regular']['open'] ?? old('opening_time', '09:00')
 $regularClose = $businessHours['regular']['close'] ?? old('closing_time', '19:00');
 $closedDays = $businessHours['closed_days'] ?? old('closed_days', []);
 $overrides = $businessHours['overrides'] ?? old('overrides', []);
+// Ensure overrides is an object, not an array
+if (empty($overrides)) {
+    $overrides = (object)[];
+}
 @endphp
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" x-data="{
     hasOverrides: {{ !empty($overrides) ? 'true' : 'false' }},
     overrides: {{ json_encode($overrides) }},
+    selectedDay: '',
     addOverride(day) {
-        if (!this.overrides[day]) {
+        if (day && !this.overrides[day]) {
             this.overrides[day] = { open: '09:00', close: '22:00' };
+            this.overrides = {...this.overrides};
+            this.selectedDay = '';
         }
     },
     removeOverride(day) {
@@ -87,18 +94,16 @@ $overrides = $businessHours['overrides'] ?? old('overrides', []);
             <div x-show="hasOverrides" x-transition class="space-y-3">
                 <p class="text-xs text-gray-500 mb-3">اختر أياماً معينة لها أوقات عمل مختلفة</p>
 
-                <!-- Day selector for adding new override -->
-                <div class="flex gap-2 items-end">
-                    <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">اختر يوماً</label>
-                        <select x-model="selectedDay" @change="if($event.target.value) { addOverride($event.target.value); $event.target.value = ''; }"
-                                class="w-full border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-sm">
-                            <option value="">اختر يوماً لإضافة أوقات خاصة...</option>
-                            @foreach($days as $key => $label)
-                                <option value="{{ $key }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                <!-- Day buttons for adding new override -->
+                <div class="flex flex-wrap gap-2">
+                    @foreach($days as $key => $label)
+                        <button type="button"
+                                x-show="!overrides['{{ $key }}']"
+                                @click="addOverride('{{ $key }}')"
+                                class="bg-brand-green text-white px-3 py-2 rounded-lg text-sm hover:opacity-90 transition">
+                            + {{ $label }}
+                        </button>
+                    @endforeach
                 </div>
 
                 <!-- Override entries -->

@@ -86,11 +86,31 @@ class BusinessController extends Controller
             'sub_area_id' => 'nullable|exists:sub_areas,id',
             'category_id' => 'required|exists:categories,id',
             'phone' => 'required|string|regex:/^09[0-9]{8}$/',
+            'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
             'opening_time' => 'nullable|date_format:H:i',
             'closing_time' => 'nullable|date_format:H:i',
             'address' => 'nullable|string|max:500',
             'is_featured' => 'boolean',
         ]);
+
+        // Handle landline number
+        if ($request->filled('landline_suffix')) {
+            $validated['landline'] = $request->landline_suffix;
+        } else {
+            $validated['landline'] = null;
+        }
+        unset($validated['landline_suffix']);
+
+        // Handle business hours
+        $businessHours = [
+            'regular' => [
+                'open' => $request->opening_time,
+                'close' => $request->closing_time,
+            ],
+            'closed_days' => $request->closed_days ?? [],
+            'overrides' => $request->overrides ?? [],
+        ];
+        $validated['business_hours'] = $businessHours;
 
         $business->update($validated);
 

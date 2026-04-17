@@ -187,6 +187,7 @@ class BusinessController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'subcategory_id' => 'nullable|exists:categories,id',
                 'phone' => 'required|string|min:9|max:15',
+                'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
                 'opening_time' => 'required|date_format:H:i',
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
@@ -214,6 +215,14 @@ class BusinessController extends Controller
                 $validated['category_id'] = $request->subcategory_id;
             }
             unset($validated['subcategory_id']);
+
+            // Handle landline number
+            if ($request->filled('landline_suffix')) {
+                $validated['landline'] = $request->landline_suffix;
+            } else {
+                $validated['landline'] = null;
+            }
+            unset($validated['landline_suffix']);
 
             // Handle null sub_area_id
             if (!$request->filled('sub_area_id')) {
@@ -255,6 +264,17 @@ class BusinessController extends Controller
                 unset($socialLinks['instagram']);
             }
             $validated['social_links'] = $socialLinks;
+
+            // Handle business hours
+            $businessHours = [
+                'regular' => [
+                    'open' => $request->opening_time,
+                    'close' => $request->closing_time,
+                ],
+                'closed_days' => $request->closed_days ?? [],
+                'overrides' => $request->overrides ?? [],
+            ];
+            $validated['business_hours'] = $businessHours;
 
             \Log::info('Before update', ['validated' => $validated]);
 

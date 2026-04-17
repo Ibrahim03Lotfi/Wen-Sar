@@ -81,6 +81,18 @@
                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-green focus:outline-none transition-colors">
             </div>
 
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Landline') }}</label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">011</span>
+                    <input type="tel" name="landline_suffix" maxlength="7" value="{{ old('landline', $business->landline) }}"
+                           class="w-full border-2 border-gray-200 rounded-xl pl-14 pr-4 py-3 focus:border-brand-green focus:outline-none transition-colors"
+                           placeholder="1234567"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 7);">
+                </div>
+                <p class="text-xs text-gray-400 mt-1">{{ __('Optional') }}</p>
+            </div>
+
             <div class="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Opening Time') }}</label>
@@ -100,6 +112,9 @@
                 <input type="text" name="address" value="{{ old('address', $business->address) }}"
                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-green focus:outline-none transition-colors">
             </div>
+
+            <!-- Business Hours -->
+            <x-business-hours :business="$business" />
 
             <div class="mb-6">
                 <label class="flex items-center gap-2">
