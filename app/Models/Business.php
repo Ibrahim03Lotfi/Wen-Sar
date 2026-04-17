@@ -20,6 +20,7 @@ class Business extends Model
         'category_id',
         'owner_id',
         'phone',
+        'landline',
         'opening_time',
         'closing_time',
         'business_hours',
@@ -115,6 +116,11 @@ class Business extends Model
     {
         return $this->status === 'approved' && 
                ($this->contract_ends_at === null || $this->contract_ends_at > now());
+    }
+
+    public function formattedLandline()
+    {
+        return $this->landline ? '011' . $this->landline : null;
     }
 
     public function daysUntilExpiry()

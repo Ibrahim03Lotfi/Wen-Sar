@@ -200,6 +200,25 @@
                 </div>
             </div>
 
+            <!-- Landline -->
+            @php
+                $landlineSuffix = '';
+                if(old('landline')) {
+                    $landlineSuffix = old('landline');
+                }
+            @endphp
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Landline') }}</label>
+                <div class="relative flex items-center">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">011</span>
+                    <input type="tel" name="landline_suffix" id="landlineInput" maxlength="7" value="{{ $landlineSuffix }}"
+                           class="w-full border-2 border-gray-200 rounded-lg py-3 pl-14 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
+                           placeholder="1234567"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 7);">
+                </div>
+                <p class="text-xs text-gray-400 mt-2">{{ __('Optional') }}</p>
+            </div>
+
         </div>
     </div>
 

@@ -268,6 +268,25 @@
                         <p class="text-xs text-gray-400 mt-2">مثال: <span class="font-bold text-gray-600">09</span><span class="text-gray-400">12345678</span></p>
                     </div>
 
+                    <!-- Landline with 011 prefix -->
+                    @php
+                        $landlineSuffix = '';
+                        if(old('landline')) {
+                            $landlineSuffix = old('landline');
+                        }
+                    @endphp
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">الرقم الأرضي</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">011</span>
+                            <input type="tel" name="landline_suffix" id="landlineInput" maxlength="7" value="{{ $landlineSuffix }}"
+                                   class="w-full border-gray-300 rounded-lg py-3 pl-14 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
+                                   placeholder="١٢٣٤٥٦٧"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 7);">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">مثال: <span class="font-bold text-gray-600">011</span><span class="text-gray-400">1234567</span> (اختياري)</p>
+                    </div>
+
                 </div>
             </div>
 

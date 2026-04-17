@@ -48,6 +48,7 @@ class BusinessController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'subcategory_id' => 'nullable|exists:categories,id',
                 'phone' => 'required|string|regex:/^09[0-9]{8}$/',
+                'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
                 'opening_time' => 'required|date_format:H:i',
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
@@ -68,6 +69,12 @@ class BusinessController extends Controller
                 $validated['category_id'] = $request->subcategory_id;
             }
             unset($validated['subcategory_id']);
+
+            // Handle landline number
+            if ($request->filled('landline_suffix')) {
+                $validated['landline'] = $request->landline_suffix;
+            }
+            unset($validated['landline_suffix']);
 
             // Handle logo upload
             $logoFile = $request->file('logo');

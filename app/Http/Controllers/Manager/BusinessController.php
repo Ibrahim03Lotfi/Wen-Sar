@@ -141,6 +141,7 @@ class BusinessController extends Controller
                 'sub_area_id' => 'nullable|exists:sub_areas,id',
                 'category_id' => 'required|exists:categories,id',
                 'phone' => 'required|string|min:9|max:15',
+                'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
                 'opening_time' => 'nullable|date_format:H:i',
                 'closing_time' => 'nullable|date_format:H:i',
                 'address' => 'nullable|string|max:500',
@@ -165,6 +166,12 @@ class BusinessController extends Controller
 
             // Remove contract_duration from validated as it's not a database field
             unset($validated['contract_duration']);
+
+            // Handle landline number
+            if ($request->filled('landline_suffix')) {
+                $validated['landline'] = $request->landline_suffix;
+            }
+            unset($validated['landline_suffix']);
 
             // Handle logo upload
             if ($request->hasFile('logo')) {
