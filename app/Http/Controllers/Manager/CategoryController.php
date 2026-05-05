@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Business;
+use App\Models\CategoryBusinessRanking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
@@ -96,5 +99,62 @@ class CategoryController extends Controller
         $category->delete();
 
         return redirect()->route('manager.categories.index')->with('success', __('Category deleted successfully.'));
+    }
+
+    public function rankings(Category $category)
+    {
+        $category->load('subcategories');
+        $categoryIds = $category->allCategoryIds();
+
+        $businesses = Business::approved()->whereIn('category_id', $categoryIds)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $rankings = CategoryBusinessRanking::where('category_id', $category->id)
+            ->orderBy('rank')
+            ->get()
+            ->keyBy('rank');
+
+        return view('manager.categories.rankings', compact('category', 'businesses', 'rankings'));
+    }
+
+    public function updateRankings(Request $request, Category $category)
+    {
+        $request->validate([
+            'rankings' => 'nullable|array',
+            'rankings.*' => 'nullable|exists:businesses,id',
+        ]);
+
+        $rankings = $request->input('rankings', []);
+        $selectedIds = array_filter($rankings);
+
+        if (count($selectedIds) !== count(array_unique($selectedIds))) {
+            return back()->with('error', __('Each place can only be selected once across all rankings.'));
+        }
+
+        DB::transaction(function () use ($rankings, $category) {
+            CategoryBusinessRanking::where('category_id', $category->id)->delete();
+
+            $insertData = [];
+
+            foreach ($rankings as $rank => $businessId) {
+                if ($businessId) {
+                    $insertData[] = [
+                        'category_id' => $category->id,
+                        'business_id' => $businessId,
+                        'rank' => (int) $rank,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+
+            if (!empty($insertData)) {
+                CategoryBusinessRanking::insert($insertData);
+            }
+        });
+
+        return redirect()->route('manager.categories.rankings', $category)
+            ->with('success', __('Rankings updated successfully.'));
     }
 }

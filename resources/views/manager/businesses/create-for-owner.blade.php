@@ -181,42 +181,74 @@
             </h2>
         </div>
         <div class="p-6">
-            <!-- Phone -->
-            @php
-                $phoneSuffix = '';
-                if(old('phone') && str_starts_with(old('phone'), '09')) {
-                    $phoneSuffix = substr(old('phone'), 2);
-                }
-            @endphp
-            <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Phone Number') }} <span class="text-red-500">*</span></label>
-                <div class="relative flex items-center">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">09</span>
-                    <input type="tel" name="phone_suffix" id="phoneInput" required maxlength="8" value="{{ $phoneSuffix }}"
-                           class="w-full border-2 border-gray-200 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
-                           placeholder="12345678"
-                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8); document.getElementById('fullPhone').value = '09' + this.value;">
-                    <input type="hidden" name="phone" id="fullPhone" value="{{ old('phone', '09') }}">
-                </div>
+            <!-- Phone Numbers -->
+            <div class="mb-6" x-data="{ phones: oldPhones() }">
+                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Phone Numbers') }}</label>
+                <template x-for="(phone, index) in phones" :key="index">
+                    <div class="relative flex items-center gap-2 mb-2">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">09</span>
+                        <input type="tel" :name="`phones[${index}]`" x-model="phone.value" maxlength="8"
+                               class="w-full border-2 border-gray-200 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
+                               placeholder="12345678"
+                               @input="phone.value = phone.value.replace(/[^0-9]/g, '').slice(0, 8);">
+                        <button type="button" @click="phones.splice(index, 1)" class="shrink-0 bg-red-100 text-red-600 hover:bg-red-200 w-10 h-10 rounded-lg flex items-center justify-center transition" title="{{ __('Remove') }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </template>
+                <button type="button" @click="phones.push({ value: '' })" class="mt-2 inline-flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-green/80 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    {{ __('Add Phone Number') }}
+                </button>
+                <p class="text-xs text-gray-400 mt-2">{{ __('Optional') }}</p>
+                <script>
+                    function oldPhones() {
+                        const oldPhones = @json(old('phones', []));
+                        if (oldPhones.length > 0) {
+                            return oldPhones.map(v => ({ value: v.startsWith('09') ? v.substring(2) : v }));
+                        }
+                        const oldPhone = @json(old('phone'));
+                        if (oldPhone) {
+                            return [{ value: oldPhone.startsWith('09') ? oldPhone.substring(2) : oldPhone }];
+                        }
+                        return [];
+                    }
+                </script>
             </div>
 
-            <!-- Landline -->
-            @php
-                $landlineSuffix = '';
-                if(old('landline')) {
-                    $landlineSuffix = old('landline');
-                }
-            @endphp
-            <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Landline') }}</label>
-                <div class="relative flex items-center">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">011</span>
-                    <input type="tel" name="landline_suffix" id="landlineInput" maxlength="7" value="{{ $landlineSuffix }}"
-                           class="w-full border-2 border-gray-200 rounded-lg py-3 pl-14 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
-                           placeholder="1234567"
-                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 7);">
-                </div>
+            <!-- Landlines -->
+            <div class="mb-6" x-data="{ landlines: oldLandlines() }">
+                <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Landlines') }}</label>
+                <template x-for="(landline, index) in landlines" :key="index">
+                    <div class="relative flex items-center gap-2 mb-2">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">011</span>
+                        <input type="tel" :name="`landlines[${index}]`" x-model="landline.value" maxlength="7"
+                               class="w-full border-2 border-gray-200 rounded-lg py-3 pl-14 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
+                               placeholder="1234567"
+                               @input="landline.value = landline.value.replace(/[^0-9]/g, '').slice(0, 7);">
+                        <button type="button" @click="landlines.splice(index, 1)" class="shrink-0 bg-red-100 text-red-600 hover:bg-red-200 w-10 h-10 rounded-lg flex items-center justify-center transition" title="{{ __('Remove') }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </template>
+                <button type="button" @click="landlines.push({ value: '' })" class="mt-2 inline-flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-green/80 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    {{ __('Add Landline') }}
+                </button>
                 <p class="text-xs text-gray-400 mt-2">{{ __('Optional') }}</p>
+                <script>
+                    function oldLandlines() {
+                        const oldLandlines = @json(old('landlines', []));
+                        if (oldLandlines.length > 0) {
+                            return oldLandlines.map(v => ({ value: v.startsWith('011') ? v.substring(3) : v }));
+                        }
+                        const oldLandline = @json(old('landline'));
+                        if (oldLandline) {
+                            return [{ value: oldLandline.startsWith('011') ? oldLandline.substring(3) : oldLandline }];
+                        }
+                        return [];
+                    }
+                </script>
             </div>
 
         </div>
@@ -277,28 +309,6 @@
                 <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Instagram') }}</label>
                 <input type="url" name="instagram" dir="ltr" value="{{ old('instagram') }}" class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://instagram.com/...">
             </div>
-        </div>
-    </div>
-
-    <!-- Section 6: Contract Duration -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-            <h2 class="font-bold text-gray-800 flex items-center gap-2">
-                <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                {{ __('Contract Duration') }} <span class="text-red-500">*</span>
-            </h2>
-        </div>
-        <div class="p-6">
-            <select name="contract_duration" required class="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white">
-                <option value="14" {{ old('contract_duration') == '14' ? 'selected' : '' }}>14 {{ __('days') }}</option>
-                <option value="30" {{ old('contract_duration') == '30' ? 'selected' : '' }}>30 {{ __('days') }}</option>
-                <option value="90" {{ old('contract_duration') == '90' ? 'selected' : (old('contract_duration') ? '' : 'selected') }}>90 {{ __('days') }}</option>
-                <option value="180" {{ old('contract_duration') == '180' ? 'selected' : '' }}>180 {{ __('days') }}</option>
-                <option value="365" {{ old('contract_duration') == '365' ? 'selected' : '' }}>1 {{ __('year') }}</option>
-            </select>
-            <p class="text-sm text-gray-500 mt-2">{{ __('Select how long the business contract will be valid.') }}</p>
         </div>
     </div>
 

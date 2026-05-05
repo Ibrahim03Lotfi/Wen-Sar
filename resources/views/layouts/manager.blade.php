@@ -64,26 +64,6 @@
                     </div>
                 </a>
 
-                <div class="h-px bg-gray-100 mx-4"></div>
-
-                <a href="{{ route('manager.approvals.expiring') }}" class="sidebar-link flex items-center justify-between gap-3 px-4 py-3 text-gray-600 hover:bg-brand-green/10 hover:text-brand-green rounded-xl transition-all {{ request()->routeIs('manager.approvals.expiring') ? 'active' : '' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <div class="flex items-center gap-2">
-                        {{ __('Expiring Soon') }}
-                        @php
-                            $expiringCount = App\Models\Business::where('status', 'approved')
-                                ->where('contract_ends_at', '<=', now()->addDays(3))
-                                ->where('contract_ends_at', '>=', now())
-                                ->count();
-                        @endphp
-                        @if($expiringCount > 0)
-                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $expiringCount }}</span>
-                        @endif
-                    </div>
-                </a>
-
                 <hr class="my-3 border-gray-100">
 
                 <div class="pt-2 pb-2">
@@ -210,18 +190,6 @@
                         @endphp
                         @if($pendingCount > 0)
                             <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $pendingCount }}</span>
-                        @endif
-                    </a>
-                    <a href="{{ route('manager.approvals.expiring') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-                        {{ __('Expiring Soon') }}
-                        @php
-                            $expiringCount = App\Models\Business::where('status', 'approved')
-                                ->where('contract_ends_at', '<=', now()->addDays(3))
-                                ->where('contract_ends_at', '>=', now())
-                                ->count();
-                        @endphp
-                        @if($expiringCount > 0)
-                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $expiringCount }}</span>
                         @endif
                     </a>
 

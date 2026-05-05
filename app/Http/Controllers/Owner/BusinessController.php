@@ -47,8 +47,11 @@ class BusinessController extends Controller
                 'sub_area_id' => 'required|exists:sub_areas,id',
                 'category_id' => 'required|exists:categories,id',
                 'subcategory_id' => 'nullable|exists:categories,id',
-                'phone' => 'required|string|regex:/^09[0-9]{8}$/',
-                'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
+                'phone' => 'nullable|string|regex:/^[0-9]{8}$/',
+                'phones' => 'nullable|array',
+                'phones.*' => 'nullable|string|regex:/^[0-9]{8}$/',
+                'landlines' => 'nullable|array',
+                'landlines.*' => 'nullable|string|regex:/^[0-9]{7}$/',
                 'opening_time' => 'required|date_format:H:i',
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
@@ -70,11 +73,29 @@ class BusinessController extends Controller
             }
             unset($validated['subcategory_id']);
 
-            // Handle landline number
-            if ($request->filled('landline_suffix')) {
-                $validated['landline'] = $request->landline_suffix;
+            // Handle phone numbers
+            $phones = [];
+            if ($request->filled('phone')) {
+                $phones[] = '09' . $request->phone;
             }
-            unset($validated['landline_suffix']);
+            if ($request->has('phones')) {
+                foreach ($request->phones as $p) {
+                    if ($p) $phones[] = '09' . $p;
+                }
+            }
+            $validated['phones'] = !empty($phones) ? array_values(array_unique($phones)) : null;
+            $validated['phone'] = $phones[0] ?? null;
+            unset($validated['phones_input']);
+
+            // Handle landline numbers
+            $landlines = [];
+            if ($request->has('landlines')) {
+                foreach ($request->landlines as $l) {
+                    if ($l) $landlines[] = '011' . $l;
+                }
+            }
+            $validated['landlines'] = !empty($landlines) ? array_values(array_unique($landlines)) : null;
+            $validated['landline'] = $landlines[0] ?? null;
 
             // Handle logo upload
             $logoFile = $request->file('logo');
@@ -186,8 +207,11 @@ class BusinessController extends Controller
                 'sub_area_id' => 'nullable|exists:sub_areas,id',
                 'category_id' => 'required|exists:categories,id',
                 'subcategory_id' => 'nullable|exists:categories,id',
-                'phone' => 'required|string|min:9|max:15',
-                'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
+                'phone' => 'nullable|string|regex:/^[0-9]{8}$/',
+                'phones' => 'nullable|array',
+                'phones.*' => 'nullable|string|regex:/^[0-9]{8}$/',
+                'landlines' => 'nullable|array',
+                'landlines.*' => 'nullable|string|regex:/^[0-9]{7}$/',
                 'opening_time' => 'required|date_format:H:i',
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
@@ -216,13 +240,28 @@ class BusinessController extends Controller
             }
             unset($validated['subcategory_id']);
 
-            // Handle landline number
-            if ($request->filled('landline_suffix')) {
-                $validated['landline'] = $request->landline_suffix;
-            } else {
-                $validated['landline'] = null;
+            // Handle phone numbers
+            $phones = [];
+            if ($request->filled('phone')) {
+                $phones[] = '09' . $request->phone;
             }
-            unset($validated['landline_suffix']);
+            if ($request->has('phones')) {
+                foreach ($request->phones as $p) {
+                    if ($p) $phones[] = '09' . $p;
+                }
+            }
+            $validated['phones'] = !empty($phones) ? array_values(array_unique($phones)) : null;
+            $validated['phone'] = $phones[0] ?? null;
+
+            // Handle landline numbers
+            $landlines = [];
+            if ($request->has('landlines')) {
+                foreach ($request->landlines as $l) {
+                    if ($l) $landlines[] = '011' . $l;
+                }
+            }
+            $validated['landlines'] = !empty($landlines) ? array_values(array_unique($landlines)) : null;
+            $validated['landline'] = $landlines[0] ?? null;
 
             // Handle null sub_area_id
             if (!$request->filled('sub_area_id')) {

@@ -125,9 +125,6 @@
                                 @elseif($business->status === 'rejected')
                                     <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded">{{ __('Rejected') }}</span>
                                 @endif
-                                @if($business->contract_ends_at)
-                                    <span class="text-xs text-gray-400">{{ __('Until') }}: {{ $business->contract_ends_at->format('Y-m-d') }}</span>
-                                @endif
                             </div>
                         </div>
                     </div>

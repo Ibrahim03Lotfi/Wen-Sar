@@ -224,7 +224,7 @@
                 @endif
             </div>
             <h3 class="font-bold text-sm md:text-base text-gray-800 group-hover:text-brand-green transition-colors truncate">{{ $cat->name }}</h3>
-            <p class="text-xs text-gray-400 mt-1">{{ $cat->businesses_count ?? $cat->businesses->count() }} {{ __('place') }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ $cat->total_businesses_count }} {{ __('place') }}</p>
         </a>
         @endforeach
     </div>

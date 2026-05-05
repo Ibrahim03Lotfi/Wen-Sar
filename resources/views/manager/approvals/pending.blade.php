@@ -46,7 +46,10 @@
 
                                 <div class="mt-4 space-y-1 text-sm text-gray-600">
                                     <p><span class="font-bold">{{ __('Owner') }}:</span> {{ $business->owner?->name ?? __('Unknown') }}</p>
-                                    <p><span class="font-bold">{{ __('Phone') }}:</span> {{ $business->phone }}</p>
+                                    @php $phones = $business->allPhones(); @endphp
+                                    @if(count($phones) > 0)
+                                        <p><span class="font-bold">{{ __('Phone') }}:</span> {{ implode(', ', $phones) }}</p>
+                                    @endif
                                     @if($business->address)
                                         <p><span class="font-bold">{{ __('Address') }}:</span> {{ $business->address }}</p>
                                     @endif
@@ -68,15 +71,6 @@
 
                                 <form method="POST" action="{{ route('manager.approvals.approve', $business) }}" class="space-y-3">
                                     @csrf
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">{{ __('Contract Duration') }}</label>
-                                        <select name="contract_duration" required class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-brand-green focus:outline-none">
-                                            <option value="30">30 {{ __('days') }}</option>
-                                            <option value="90">90 {{ __('days') }}</option>
-                                            <option value="180">180 {{ __('days') }}</option>
-                                            <option value="365">1 {{ __('year') }}</option>
-                                        </select>
-                                    </div>
                                     <button type="submit" class="w-full bg-green-500 text-white font-bold py-2.5 rounded-xl hover:bg-green-600 transition-all flex items-center justify-center gap-2">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

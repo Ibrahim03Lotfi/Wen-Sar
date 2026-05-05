@@ -1,8 +1,38 @@
 <?php $__empty_1 = true; $__currentLoopData = $businesses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $business): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-<div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 border-gray-200 overflow-hidden group">
+<?php
+    $rankBorder = '';
+    $rankBadge = '';
+    $rankBadgeClass = '';
+    if (isset($business->manager_rank) && $business->manager_rank <= 10) {
+        $rankBadge = $business->manager_rank;
+        $rankBadgeClass = match($business->manager_rank) {
+            1 => 'bg-yellow-500 border-yellow-600 text-white',
+            2 => 'bg-gray-400 border-gray-500 text-white',
+            3 => 'bg-orange-500 border-orange-600 text-white',
+            4, 5 => 'bg-blue-500 border-blue-600 text-white',
+            6, 7 => 'bg-purple-500 border-purple-600 text-white',
+            default => 'bg-teal-500 border-teal-600 text-white',
+        };
+        $rankBorder = match($business->manager_rank) {
+            1 => 'border-yellow-400',
+            2 => 'border-gray-300',
+            3 => 'border-orange-400',
+            4, 5 => 'border-blue-300',
+            6, 7 => 'border-purple-300',
+            default => 'border-teal-300',
+        };
+    }
+?>
+<div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 <?php echo e($rankBorder ?: 'border-gray-200'); ?> overflow-hidden group relative">
+    <?php if($rankBadge): ?>
+    <div class="absolute top-0 left-0 z-10 <?php echo e($rankBadgeClass); ?> text-xs font-bold px-3 py-1 rounded-br-lg shadow-md border-b-2 border-r-2">
+        #<?php echo e($rankBadge); ?>
+
+    </div>
+    <?php endif; ?>
     <div class="flex flex-col md:flex-row">
         <!-- Image Section -->
-        <div class="w-full md:w-72 h-56 md:h-auto flex-shrink-0 bg-gray-100 relative overflow-hidden border-b-2 md:border-b-0 md:border-l-2 border-gray-200">
+        <div class="w-full md:w-72 h-56 md:h-auto flex-shrink-0 bg-gray-100 relative overflow-hidden border-b-2 md:border-b-0 md:border-l-2 <?php echo e($rankBorder ?: 'border-gray-200'); ?>">
             <?php if($business->logo): ?>
                 <img src="<?php echo e(asset('storage/' . $business->logo)); ?>" alt="<?php echo e($business->name); ?>" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
             <?php elseif($business->images && count($business->images) > 0): ?>

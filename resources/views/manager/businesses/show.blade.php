@@ -91,25 +91,6 @@
                         <span class="font-bold">{{ $business->approved_at->format('Y-m-d') }}</span>
                     </div>
                 @endif
-                @if($business->contract_ends_at)
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">{{ __('Contract Ends') }}</span>
-                        @php
-                            $daysLeft = $business->daysUntilExpiry();
-                        @endphp
-                        <span class="font-bold {{ $daysLeft <= 3 ? 'text-red-600' : 'text-green-600' }}">
-                            {{ $business->contract_ends_at->format('Y-m-d') }}
-                        </span>
-                    </div>
-                    @if($daysLeft !== null)
-                        <div class="flex justify-between">
-                            <span class="text-gray-500">{{ __('Days Remaining') }}</span>
-                            <span class="font-bold {{ $daysLeft <= 3 ? 'text-red-600' : 'text-green-600' }}">
-                                {{ $daysLeft > 0 ? $daysLeft : __('Expired') }}
-                            </span>
-                        </div>
-                    @endif
-                @endif
                 @if($business->approvedBy)
                     <div class="flex justify-between">
                         <span class="text-gray-500">{{ __('Approved By') }}</span>
@@ -123,12 +104,19 @@
         <div class="bg-white rounded-xl shadow-sm p-6">
             <h4 class="font-bold text-gray-700 mb-4">{{ __('Contact Info') }}</h4>
             <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                @php $phones = $business->allPhones(); @endphp
+                @if(count($phones) > 0)
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                     </svg>
-                    <span>{{ $business->phone }}</span>
+                    <div class="space-y-1">
+                        @foreach($phones as $phone)
+                            <span class="block">{{ $phone }}</span>
+                        @endforeach
+                    </div>
                 </div>
+                @endif
                 @if($business->address)
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

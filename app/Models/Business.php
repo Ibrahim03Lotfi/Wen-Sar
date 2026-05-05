@@ -21,6 +21,8 @@ class Business extends Model
         'owner_id',
         'phone',
         'landline',
+        'phones',
+        'landlines',
         'opening_time',
         'closing_time',
         'business_hours',
@@ -31,8 +33,6 @@ class Business extends Model
         'featured_rank',
         'status',
         'approved_at',
-        'contract_ends_at',
-        'contract_duration_days',
         'approved_by',
     ];
 
@@ -40,9 +40,10 @@ class Business extends Model
         'images' => 'array',
         'social_links' => 'array',
         'business_hours' => 'array',
+        'phones' => 'array',
+        'landlines' => 'array',
         'is_featured' => 'boolean',
         'approved_at' => 'datetime',
-        'contract_ends_at' => 'datetime',
     ];
 
     public function owner()
@@ -100,11 +101,7 @@ class Business extends Model
 
     public function scopeApproved($query)
     {
-        return $query->where('status', 'approved')
-                     ->where(function($q) {
-                         $q->whereNull('contract_ends_at')
-                           ->orWhere('contract_ends_at', '>', now());
-                     });
+        return $query->where('status', 'approved');
     }
 
     public function scopePending($query)
@@ -114,20 +111,49 @@ class Business extends Model
 
     public function isApproved()
     {
-        return $this->status === 'approved' && 
-               ($this->contract_ends_at === null || $this->contract_ends_at > now());
+        return $this->status === 'approved';
     }
 
     public function formattedLandline()
     {
-        return $this->landline ? '011' . $this->landline : null;
+        return $this->landline;
     }
 
-    public function daysUntilExpiry()
+    public function allPhones()
     {
-        if (!$this->contract_ends_at) {
-            return null;
+        $phones = [];
+        if ($this->phone) {
+            $phones[] = $this->phone;
         }
-        return now()->diffInDays($this->contract_ends_at, false);
+        if ($this->phones) {
+            foreach ($this->phones as $p) {
+                if ($p && !in_array($p, $phones)) {
+                    $phones[] = $p;
+                }
+            }
+        }
+        return $phones;
+    }
+
+    public function allLandlines()
+    {
+        $landlines = [];
+        if ($this->landline) {
+            $landlines[] = $this->landline;
+        }
+        if ($this->landlines) {
+            foreach ($this->landlines as $l) {
+                if ($l && !in_array($l, $landlines)) {
+                    $landlines[] = $l;
+                }
+            }
+        }
+        return $landlines;
+    }
+
+    public function primaryPhone()
+    {
+        $phones = $this->allPhones();
+        return $phones[0] ?? null;
     }
 }

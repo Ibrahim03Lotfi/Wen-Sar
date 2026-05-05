@@ -94,7 +94,7 @@
                     
                     <h3 class="font-bold text-gray-800 text-lg group-hover:text-brand-green transition-colors mb-2">{{ $cat->name }}</h3>
                     <div class="flex items-center justify-center gap-2">
-                        <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{{ $cat->businesses_count }} مكان</span>
+                        <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{{ $cat->total_businesses_count }} مكان</span>
                     </div>
                 </div>
                 

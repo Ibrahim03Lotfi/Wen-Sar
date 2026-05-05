@@ -259,40 +259,74 @@
                     </h2>
                 </div>
                 <div class="p-6">
-                    <!-- Phone with 09 prefix -->
-                    @php
-                        $phoneSuffix = '';
-                        if($business->phone && str_starts_with($business->phone, '09')) {
-                            $phoneSuffix = substr($business->phone, 2);
-                        }
-                    @endphp
-                    <div class="mb-6">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">رقم الهاتف <span class="text-red-500">*</span></label>
-                        <div class="relative flex items-center">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">09</span>
-                            <input type="tel" name="phone_suffix" id="phoneInput" required maxlength="8" value="{{ $phoneSuffix }}"
-                                   class="w-full border-gray-300 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
-                                   placeholder="١٢٣٤٥٦٧٨"
-                                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8); document.getElementById('fullPhone').value = '09' + this.value;">
-                            <input type="hidden" name="phone" id="fullPhone" value="{{ $business->phone ?? '09' }}">
-                        </div>
-                        <p class="text-xs text-gray-400 mt-2">مثال: <span class="font-bold text-gray-600">09</span><span class="text-gray-400">12345678</span></p>
+                    <!-- Phone Numbers -->
+                    <div class="mb-6" x-data="{ phones: editPhones() }">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">رقم الهاتف</label>
+                        <template x-for="(phone, index) in phones" :key="index">
+                            <div class="relative flex items-center gap-2 mb-2">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">09</span>
+                                <input type="tel" :name="`phones[${index}]`" x-model="phone.value" maxlength="8"
+                                       class="w-full border-gray-300 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
+                                       placeholder="12345678"
+                                       @input="phone.value = phone.value.replace(/[^0-9]/g, '').slice(0, 8);">
+                                <button type="button" @click="phones.splice(index, 1)" class="shrink-0 bg-red-100 text-red-600 hover:bg-red-200 w-10 h-10 rounded-lg flex items-center justify-center transition" title="حذف">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        </template>
+                        <button type="button" @click="phones.push({ value: '' })" class="mt-2 inline-flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-green/80 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            إضافة رقم هاتف
+                        </button>
+                        <p class="text-xs text-gray-400 mt-2">اختياري</p>
+                        <script>
+                            function editPhones() {
+                                const oldPhones = @json(old('phones', $business->phones ?? []));
+                                if (oldPhones && oldPhones.length > 0) {
+                                    return oldPhones.map(v => ({ value: v.startsWith('09') ? v.substring(2) : v }));
+                                }
+                                const oldPhone = @json(old('phone', $business->phone));
+                                if (oldPhone) {
+                                    return [{ value: oldPhone.startsWith('09') ? oldPhone.substring(2) : oldPhone }];
+                                }
+                                return [];
+                            }
+                        </script>
                     </div>
 
-                    <!-- Landline with 011 prefix -->
-                    @php
-                        $landlineSuffix = $business->landline ?? '';
-                    @endphp
-                    <div class="mb-6">
+                    <!-- Landlines -->
+                    <div class="mb-6" x-data="{ landlines: editLandlines() }">
                         <label class="block text-sm font-bold text-gray-700 mb-2">الرقم الأرضي</label>
-                        <div class="relative flex items-center">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">011</span>
-                            <input type="tel" name="landline_suffix" id="landlineInput" maxlength="7" value="{{ $landlineSuffix }}"
-                                   class="w-full border-gray-300 rounded-lg py-3 pl-14 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
-                                   placeholder="١٢٣٤٥٦٧"
-                                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 7);">
-                        </div>
-                        <p class="text-xs text-gray-400 mt-2">مثال: <span class="font-bold text-gray-600">011</span><span class="text-gray-400">1234567</span> (اختياري)</p>
+                        <template x-for="(landline, index) in landlines" :key="index">
+                            <div class="relative flex items-center gap-2 mb-2">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-brand-green font-extrabold text-lg select-none">011</span>
+                                <input type="tel" :name="`landlines[${index}]`" x-model="landline.value" maxlength="7"
+                                       class="w-full border-gray-300 rounded-lg py-3 pl-14 pr-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 font-bold tracking-wider"
+                                       placeholder="1234567"
+                                       @input="landline.value = landline.value.replace(/[^0-9]/g, '').slice(0, 7);">
+                                <button type="button" @click="landlines.splice(index, 1)" class="shrink-0 bg-red-100 text-red-600 hover:bg-red-200 w-10 h-10 rounded-lg flex items-center justify-center transition" title="حذف">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        </template>
+                        <button type="button" @click="landlines.push({ value: '' })" class="mt-2 inline-flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-green/80 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            إضافة رقم أرضي
+                        </button>
+                        <p class="text-xs text-gray-400 mt-2">اختياري</p>
+                        <script>
+                            function editLandlines() {
+                                const oldLandlines = @json(old('landlines', $business->landlines ?? []));
+                                if (oldLandlines && oldLandlines.length > 0) {
+                                    return oldLandlines.map(v => ({ value: v.startsWith('011') ? v.substring(3) : v }));
+                                }
+                                const oldLandline = @json(old('landline', $business->landline));
+                                if (oldLandline) {
+                                    return [{ value: oldLandline.startsWith('011') ? oldLandline.substring(3) : oldLandline }];
+                                }
+                                return [];
+                            }
+                        </script>
                     </div>
 
                 </div>

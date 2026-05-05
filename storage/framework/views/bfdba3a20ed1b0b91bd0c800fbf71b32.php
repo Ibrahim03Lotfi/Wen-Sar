@@ -175,6 +175,23 @@
         </div>
     </div>
 
+    <!-- Subcategories -->
+    <?php if(isset($category) && $category->subcategories->isNotEmpty()): ?>
+    <div class="bg-white border-b-2 border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-5">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                <span class="text-sm font-bold text-gray-700 whitespace-nowrap ml-2"><?php echo e(__('Subcategories')); ?>:</span>
+                <?php $__currentLoopData = $category->subcategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sub): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <a href="<?php echo e(route('business.category', $sub->id)); ?>" class="px-4 py-2 bg-gray-100 hover:bg-brand-green hover:text-white text-gray-700 rounded-full text-sm font-medium transition-colors whitespace-nowrap border border-gray-200 hover:border-brand-green shadow-sm">
+                    <?php echo e($sub->name); ?>
+
+                </a>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <div class="flex flex-col lg:flex-row gap-4 md:gap-6">

@@ -38,22 +38,6 @@ class BusinessController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        // Filter by contract status
-        if ($request->has('contract_status')) {
-            switch ($request->contract_status) {
-                case 'active':
-                    $query->where('contract_ends_at', '>', now());
-                    break;
-                case 'expired':
-                    $query->where('contract_ends_at', '<=', now());
-                    break;
-                case 'expiring_soon':
-                    $query->where('contract_ends_at', '<=', now()->addDays(3))
-                          ->where('contract_ends_at', '>=', now());
-                    break;
-            }
-        }
-
         $businesses = $query->latest()->paginate(20);
         $categories = Category::all();
         $districts = District::all();
@@ -85,21 +69,41 @@ class BusinessController extends Controller
             'district_id' => 'required|exists:districts,id',
             'sub_area_id' => 'nullable|exists:sub_areas,id',
             'category_id' => 'required|exists:categories,id',
-            'phone' => 'required|string|regex:/^09[0-9]{8}$/',
+            'phone' => 'nullable|string|regex:/^[0-9]{8}$/',
+            'phones' => 'nullable|array',
+            'phones.*' => 'nullable|string|regex:/^[0-9]{8}$/',
             'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
+            'landlines' => 'nullable|array',
+            'landlines.*' => 'nullable|string|regex:/^[0-9]{7}$/',
             'opening_time' => 'nullable|date_format:H:i',
             'closing_time' => 'nullable|date_format:H:i',
             'address' => 'nullable|string|max:500',
             'is_featured' => 'boolean',
         ]);
 
-        // Handle landline number
-        if ($request->filled('landline_suffix')) {
-            $validated['landline'] = $request->landline_suffix;
-        } else {
-            $validated['landline'] = null;
+        // Handle phone numbers
+        $phones = [];
+        if ($request->filled('phone')) {
+            $phones[] = '09' . $request->phone;
         }
-        unset($validated['landline_suffix']);
+        if ($request->has('phones')) {
+            foreach ($request->phones as $p) {
+                if ($p) $phones[] = '09' . $p;
+            }
+        }
+        $validated['phones'] = !empty($phones) ? array_values(array_unique($phones)) : null;
+        $validated['phone'] = $phones[0] ?? null;
+        unset($validated['phone']);
+
+        // Handle landline numbers
+        $landlines = [];
+        if ($request->has('landlines')) {
+            foreach ($request->landlines as $l) {
+                if ($l) $landlines[] = '011' . $l;
+            }
+        }
+        $validated['landlines'] = !empty($landlines) ? array_values(array_unique($landlines)) : null;
+        $validated['landline'] = $landlines[0] ?? null;
 
         // Handle business hours
         $businessHours = [
@@ -160,8 +164,11 @@ class BusinessController extends Controller
                 'district_id' => 'required|exists:districts,id',
                 'sub_area_id' => 'nullable|exists:sub_areas,id',
                 'category_id' => 'required|exists:categories,id',
-                'phone' => 'required|string|min:9|max:15',
-                'landline_suffix' => 'nullable|string|regex:/^[0-9]{7}$/',
+                'phone' => 'nullable|string|regex:/^[0-9]{8}$/',
+                'phones' => 'nullable|array',
+                'phones.*' => 'nullable|string|regex:/^[0-9]{8}$/',
+                'landlines' => 'nullable|array',
+                'landlines.*' => 'nullable|string|regex:/^[0-9]{7}$/',
                 'opening_time' => 'nullable|date_format:H:i',
                 'closing_time' => 'nullable|date_format:H:i',
                 'address' => 'nullable|string|max:500',
@@ -170,7 +177,6 @@ class BusinessController extends Controller
                 'images.*' => 'nullable|image|max:2048',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
-                'contract_duration' => 'required|in:14,30,90,180,365',
             ]);
 
             $validated['owner_id'] = $user->id;
@@ -178,19 +184,31 @@ class BusinessController extends Controller
             $validated['approved_by'] = Auth::guard('manager')->id();
             $validated['approved_at'] = now();
 
-            // Set contract dates based on selected duration
-            $duration = (int) $request->contract_duration;
-            $validated['contract_starts_at'] = now();
-            $validated['contract_ends_at'] = now()->addDays($duration);
-            $validated['contract_duration_days'] = $duration;
-
-            // Remove contract_duration from validated as it's not a database field
-            unset($validated['contract_duration']);
-
-            // Handle landline number
-            if ($request->filled('landline_suffix')) {
-                $validated['landline'] = $request->landline_suffix;
+            // Handle phone numbers
+            $phones = [];
+            if ($request->filled('phone')) {
+                $phones[] = '09' . $request->phone;
             }
+            if ($request->has('phones')) {
+                foreach ($request->phones as $p) {
+                    if ($p) $phones[] = '09' . $p;
+                }
+            }
+            $validated['phones'] = !empty($phones) ? array_values(array_unique($phones)) : null;
+            $validated['phone'] = $phones[0] ?? null;
+
+            // Handle landline numbers
+            $landlines = [];
+            if ($request->filled('landline_suffix')) {
+                $landlines[] = '011' . $request->landline_suffix;
+            }
+            if ($request->has('landlines')) {
+                foreach ($request->landlines as $l) {
+                    if ($l) $landlines[] = '011' . $l;
+                }
+            }
+            $validated['landlines'] = !empty($landlines) ? array_values(array_unique($landlines)) : null;
+            $validated['landline'] = $landlines[0] ?? null;
             unset($validated['landline_suffix']);
 
             // Handle logo upload

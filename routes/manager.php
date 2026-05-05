@@ -41,6 +41,8 @@ Route::prefix('manager')->name('manager.')->group(function () {
 
         // Categories CRUD
         Route::resource('categories', CategoryController::class);
+        Route::get('/categories/{category}/rankings', [CategoryController::class, 'rankings'])->name('categories.rankings');
+        Route::post('/categories/{category}/rankings', [CategoryController::class, 'updateRankings'])->name('categories.rankings.update');
 
         // Business Owners
         Route::get('/owners', [OwnerController::class, 'index'])->name('owners.index');
@@ -59,7 +61,6 @@ Route::prefix('manager')->name('manager.')->group(function () {
 
         // Approvals - Order matters: specific routes first, then parameterized
         Route::get('/approvals/pending', [ApprovalController::class, 'pending'])->name('approvals.pending');
-        Route::get('/approvals/expiring', [ApprovalController::class, 'expiring'])->name('approvals.expiring');
         Route::get('/approvals/{business}', [ApprovalController::class, 'show'])->name('approvals.show');
         Route::post('/approvals/{business}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
         Route::post('/approvals/{business}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');

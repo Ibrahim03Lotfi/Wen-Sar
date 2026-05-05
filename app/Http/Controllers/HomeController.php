@@ -12,7 +12,14 @@ class HomeController extends Controller
     public function index()
     {
         $governorates = Governorate::with('districts')->get();
-        $categories = Category::whereNull('parent_id')->with(['subcategories'])->get();
+        $categories = Category::whereNull('parent_id')
+            ->with(['subcategories' => fn($q) => $q->withCount('businesses')])
+            ->withCount('businesses')
+            ->get()
+            ->map(function ($cat) {
+                $cat->total_businesses_count = $cat->totalBusinessesCount();
+                return $cat;
+            });
         $featuredBusinesses = Business::where('is_featured', true)
             ->with(['category', 'subArea'])
             ->orderBy('featured_rank')
@@ -24,7 +31,14 @@ class HomeController extends Controller
 
     public function categories()
     {
-        $categories = Category::withCount('businesses')->get();
+        $categories = Category::whereNull('parent_id')
+            ->with(['subcategories' => fn($q) => $q->withCount('businesses')])
+            ->withCount('businesses')
+            ->get()
+            ->map(function ($cat) {
+                $cat->total_businesses_count = $cat->totalBusinessesCount();
+                return $cat;
+            });
         return view('categories', compact('categories'));
     }
 

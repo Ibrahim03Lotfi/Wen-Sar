@@ -22,4 +22,30 @@ class Category extends Model
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
+
+    public function allCategoryIds()
+    {
+        $ids = [$this->id];
+
+        if ($this->relationLoaded('subcategories')) {
+            foreach ($this->subcategories as $sub) {
+                $ids[] = $sub->id;
+            }
+        } else {
+            $ids = array_merge($ids, $this->subcategories()->pluck('id')->toArray());
+        }
+
+        return $ids;
+    }
+
+    public function totalBusinessesCount()
+    {
+        if ($this->relationLoaded('subcategories')) {
+            $subCount = $this->subcategories->sum('businesses_count');
+        } else {
+            $subCount = $this->subcategories()->withCount('businesses')->get()->sum('businesses_count');
+        }
+
+        return ($this->businesses_count ?? 0) + $subCount;
+    }
 }

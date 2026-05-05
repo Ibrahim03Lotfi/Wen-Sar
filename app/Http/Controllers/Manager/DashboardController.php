@@ -17,10 +17,6 @@ class DashboardController extends Controller
         $stats = [
             'pending_businesses' => Business::where('status', 'pending')->count(),
             'approved_businesses' => Business::where('status', 'approved')->count(),
-            'expiring_soon' => Business::where('status', 'approved')
-                ->where('contract_ends_at', '<=', Carbon::now()->addDays(3))
-                ->where('contract_ends_at', '>=', Carbon::now())
-                ->count(),
             'total_owners' => User::whereHas('roles', function($q) {
                 $q->where('name', 'owner');
             })->count(),
@@ -35,14 +31,6 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $expiringBusinesses = Business::where('status', 'approved')
-            ->where('contract_ends_at', '<=', Carbon::now()->addDays(3))
-            ->where('contract_ends_at', '>=', Carbon::now())
-            ->with(['owner', 'category'])
-            ->orderBy('contract_ends_at')
-            ->take(5)
-            ->get();
-
-        return view('manager.dashboard', compact('stats', 'recentPending', 'expiringBusinesses'));
+        return view('manager.dashboard', compact('stats', 'recentPending'));
     }
 }

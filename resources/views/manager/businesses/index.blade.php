@@ -27,14 +27,6 @@
                 @endforeach
             </select>
         </div>
-        <div class="w-48">
-            <select name="contract_status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:border-brand-green focus:outline-none transition-colors bg-white">
-                <option value="">{{ __('All Contracts') }}</option>
-                <option value="active" {{ request('contract_status') == 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
-                <option value="expiring_soon" {{ request('contract_status') == 'expiring_soon' ? 'selected' : '' }}>{{ __('Expiring Soon') }}</option>
-                <option value="expired" {{ request('contract_status') == 'expired' ? 'selected' : '' }}>{{ __('Expired') }}</option>
-            </select>
-        </div>
         <button type="submit" class="bg-brand-green text-white font-bold py-2.5 px-6 rounded-xl hover:opacity-90 transition-all">
             {{ __('Filter') }}
         </button>
@@ -54,7 +46,6 @@
                         <th class="px-6 py-4 text-right text-sm font-bold text-gray-600">{{ __('Business') }}</th>
                         <th class="px-6 py-4 text-right text-sm font-bold text-gray-600">{{ __('Owner') }}</th>
                         <th class="px-6 py-4 text-right text-sm font-bold text-gray-600">{{ __('Location') }}</th>
-                        <th class="px-6 py-4 text-center text-sm font-bold text-gray-600">{{ __('Contract') }}</th>
                         <th class="px-6 py-4 text-center text-sm font-bold text-gray-600">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -87,21 +78,6 @@
                             <span class="text-sm text-gray-600">{{ $business->district?->name ?? '-' }}</span>
                             @if($business->subArea)
                                 <p class="text-xs text-gray-400">{{ $business->subArea->name }}</p>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            @if($business->contract_ends_at)
-                                @php
-                                    $daysLeft = $business->daysUntilExpiry();
-                                @endphp
-                                <div class="text-sm">
-                                    <p class="font-bold {{ $daysLeft <= 3 ? 'text-red-600' : 'text-green-600' }}">
-                                        {{ $daysLeft > 0 ? $daysLeft . ' ' . __('days') : __('Expired') }}
-                                    </p>
-                                    <p class="text-xs text-gray-400">{{ $business->contract_ends_at->format('Y-m-d') }}</p>
-                                </div>
-                            @else
-                                <span class="text-gray-400 text-sm">-</span>
                             @endif
                         </td>
                         <td class="px-6 py-4">

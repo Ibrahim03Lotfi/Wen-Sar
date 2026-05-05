@@ -43,11 +43,14 @@
             </div>
             <div class="flex gap-3 md:gap-4 w-full md:w-auto mt-4 md:mt-0"
                  x-data="{ showLoginAlert: false, isAuth: {{ auth()->check() ? 'true' : 'false' }} }">
-                <a href="tel:{{ $business->phone }}" class="flex-grow md:flex-none flex items-center justify-center gap-2 md:gap-3 bg-brand-green text-white font-bold py-3 md:py-4 px-6 md:px-10 rounded-xl md:rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-brand-green/20 text-sm md:text-base">
+                @php $primaryPhone = $business->primaryPhone(); @endphp
+                @if($primaryPhone)
+                <a href="tel:{{ $primaryPhone }}" class="flex-grow md:flex-none flex items-center justify-center gap-2 md:gap-3 bg-brand-green text-white font-bold py-3 md:py-4 px-6 md:px-10 rounded-xl md:rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-brand-green/20 text-sm md:text-base">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                     <span class="hidden sm:inline">اتصل الآن</span>
                     <span class="sm:hidden">اتصل</span>
                 </a>
+                @endif
                 @auth
                     @php
                         $isFav = auth()->user()->favorites->contains($business->id);
@@ -224,25 +227,38 @@
                 <h3 class="text-lg md:text-xl font-bold text-gray-900 border-b border-gray-50 pb-3 md:pb-4">معلومات التواصل</h3>
                 
                 <div class="space-y-4 md:space-y-6">
-                    <!-- Phone -->
+                    <!-- Phones -->
+                    @php $allPhones = $business->allPhones(); @endphp
+                    @if(count($allPhones) > 0)
                     <div class="flex items-start gap-3 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-brand-white transition-colors">
                         <div class="w-10 h-10 md:w-12 md:h-12 bg-brand-green text-white rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-brand-green/20 font-bold">
                             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                         </div>
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">رقم الهاتف</p>
-                            <p class="font-black text-base md:text-lg text-gray-800 truncate" dir="ltr">{{ $business->phone }}</p>
+                            <div class="space-y-1">
+                                @foreach($allPhones as $phone)
+                                    <a href="tel:{{ $phone }}" class="font-black text-base md:text-lg text-gray-800 truncate block hover:text-brand-green transition-colors" dir="ltr">{{ $phone }}</a>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
+                    @endif
 
-                    @if($business->landline)
+                    <!-- Landlines -->
+                    @php $allLandlines = $business->allLandlines(); @endphp
+                    @if(count($allLandlines) > 0)
                     <div class="flex items-start gap-3 md:gap-5 p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-brand-white transition-colors">
                         <div class="w-10 h-10 md:w-12 md:h-12 bg-brand-green text-white rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 font-bold">
                             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                         </div>
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">الرقم الأرضي</p>
-                            <p class="font-black text-base md:text-lg text-gray-800 truncate" dir="ltr">011{{ $business->landline }}</p>
+                            <div class="space-y-1">
+                                @foreach($allLandlines as $landline)
+                                    <a href="tel:{{ $landline }}" class="font-black text-base md:text-lg text-gray-800 truncate block hover:text-brand-green transition-colors" dir="ltr">{{ $landline }}</a>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                     @endif

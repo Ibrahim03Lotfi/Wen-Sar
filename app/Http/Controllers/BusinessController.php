@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\Category;
+use App\Models\CategoryBusinessRanking;
 use App\Models\District;
 use App\Models\SubArea;
 use Illuminate\Http\Request;
@@ -110,8 +111,11 @@ class BusinessController extends Controller
 
     public function category(Request $request, Category $category)
     {
-        $query = Business::approved()->where('category_id', $category->id)
-            ->with(['subArea', 'reviews']);
+        $category->load('subcategories');
+        $categoryIds = $category->allCategoryIds();
+
+        $query = Business::approved()->whereIn('category_id', $categoryIds)
+            ->with(['subArea', 'reviews', 'category']);
 
         // Apply search query if provided
         if ($request->has('query') && $request->query) {
@@ -129,6 +133,33 @@ class BusinessController extends Controller
         }
 
         $businesses = $query->get();
+
+        // Apply manager rankings: top 10 ordered, rest random
+        $rankings = CategoryBusinessRanking::where('category_id', $category->id)
+            ->orderBy('rank')
+            ->get()
+            ->keyBy('business_id');
+
+        if ($rankings->isNotEmpty()) {
+            $ranked = collect();
+            $unranked = collect();
+
+            foreach ($businesses as $business) {
+                if ($rankings->has($business->id)) {
+                    $business->manager_rank = $rankings[$business->id]->rank;
+                    $ranked->push($business);
+                } else {
+                    $unranked->push($business);
+                }
+            }
+
+            $ranked = $ranked->sortBy('manager_rank')->values();
+            $unranked = $unranked->shuffle()->values();
+
+            $businesses = $ranked->merge($unranked);
+        } else {
+            $businesses = $businesses->shuffle();
+        }
 
         $categories = Category::all();
         $districts = District::all();

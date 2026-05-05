@@ -141,12 +141,10 @@
                                 <div class="absolute top-4 left-4 shadow-lg">
                                     @if($business->status === 'pending')
                                         <span class="bg-yellow-500 text-white text-[10px] font-bold px-3 py-1 rounded-full">بانتظار الموافقة</span>
-                                    @elseif($business->status === 'approved' && ($business->contract_ends_at === null || $business->contract_ends_at > now()))
+                                    @elseif($business->status === 'approved')
                                         <span class="bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full">منشور</span>
                                     @elseif($business->status === 'rejected')
                                         <span class="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full">مرفوض</span>
-                                    @elseif($business->contract_ends_at && $business->contract_ends_at <= now())
-                                        <span class="bg-gray-500 text-white text-[10px] font-bold px-3 py-1 rounded-full">منتهي</span>
                                     @endif
                                 </div>
                             </div>
@@ -162,26 +160,8 @@
                                         {{ $business->views_count }}
                                     </div>
                                 </div>
-
-                                <!-- Contract Info for Approved Businesses -->
-                                @if($business->status === 'approved' && $business->contract_ends_at)
-                                <div class="mb-4 text-xs">
-                                    @php
-                                        $daysLeft = $business->daysUntilExpiry();
-                                    @endphp
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-gray-500">ينتهي العقد:</span>
-                                        <span class="font-bold {{ $daysLeft <= 3 ? 'text-red-500' : 'text-green-600' }}">
-                                            {{ $business->contract_ends_at->format('Y-m-d') }}
-                                            @if($daysLeft !== null)
-                                                ({{ $daysLeft > 0 ? $daysLeft . ' يوم متبقي' : 'منتهي' }})
-                                            @endif
-                                        </span>
-                                    </div>
-                                </div>
-                                @endif
-
-                                <div class="flex gap-3 pt-4 border-t border-gray-50">
+                                
+                                <div class="flex gap-2 pt-4 border-t border-gray-50">
                                     <a href="{{ route('owner.businesses.edit', $business->id) }}" class="flex-1 bg-brand-green/5 text-brand-green font-bold text-center py-3 rounded-xl hover:bg-brand-green hover:text-white transition-all">
                                         تعديل البيانات
                                     </a>

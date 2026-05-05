@@ -32,20 +32,6 @@
         </div>
     </a>
 
-    <a href="<?php echo e(route('manager.approvals.expiring')); ?>" class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500 hover:shadow-md transition-all">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-500"><?php echo e(__('Expiring')); ?></p>
-                <p class="text-2xl font-bold text-gray-800"><?php echo e($stats['expiring_soon']); ?></p>
-            </div>
-            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-        </div>
-    </a>
-
     <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
         <div class="flex items-center justify-between">
             <div>
@@ -140,52 +126,6 @@
                 </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <p class="text-gray-500 text-center py-4"><?php echo e(__('No pending approvals')); ?></p>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Expiring Soon -->
-    <div class="bg-white rounded-xl shadow-sm">
-        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="font-bold text-gray-800 flex items-center gap-2">
-                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <?php echo e(__('Contracts Expiring Soon')); ?>
-
-            </h3>
-            <a href="<?php echo e(route('manager.approvals.expiring')); ?>" class="text-sm text-brand-green hover:underline"><?php echo e(__('View All')); ?></a>
-        </div>
-        <div class="p-4">
-            <?php $__empty_1 = true; $__currentLoopData = $expiringBusinesses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $business): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                <?php
-                    $daysLeft = now()->diffInDays($business->contract_ends_at, false);
-                ?>
-                <div class="flex items-center justify-between py-3 <?php echo e(!$loop->last ? 'border-b border-gray-100' : ''); ?>">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <?php if($business->logo): ?>
-                                <img src="<?php echo e(asset('storage/' . $business->logo)); ?>" class="w-full h-full object-cover rounded-lg">
-                            <?php else: ?>
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                </svg>
-                            <?php endif; ?>
-                        </div>
-                        <div>
-                            <p class="font-bold text-gray-800 text-sm"><?php echo e($business->name); ?></p>
-                            <p class="text-xs text-gray-500"><?php echo e($business->category->name); ?></p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-xs font-bold <?php echo e($daysLeft <= 1 ? 'text-red-600' : 'text-orange-600'); ?>">
-                            <?php echo e($daysLeft > 0 ? $daysLeft . ' ' . __('days left') : __('Expires today')); ?>
-
-                        </span>
-                    </div>
-                </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                <p class="text-gray-500 text-center py-4"><?php echo e(__('No contracts expiring soon')); ?></p>
             <?php endif; ?>
         </div>
     </div>

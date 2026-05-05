@@ -58,7 +58,10 @@
                     <div class="bg-gray-50 rounded-xl p-4">
                         <h4 class="font-bold text-gray-700 mb-3">{{ __('Contact Information') }}</h4>
                         <div class="space-y-2 text-sm">
-                            <p><span class="text-gray-500">{{ __('Phone') }}:</span> <span class="font-bold">{{ $business->phone }}</span></p>
+                            @php $phones = $business->allPhones(); @endphp
+                            @if(count($phones) > 0)
+                                <p><span class="text-gray-500">{{ __('Phone') }}:</span> <span class="font-bold">{{ implode(', ', $phones) }}</span></p>
+                            @endif
                             @if($business->address)
                                 <p><span class="text-gray-500">{{ __('Address') }}:</span> {{ $business->address }}</p>
                             @endif
@@ -124,17 +127,6 @@
             
             <form method="POST" action="{{ route('manager.approvals.approve', $business) }}" class="mb-4">
                 @csrf
-                <div class="mb-4">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">{{ __('Contract Duration') }}</label>
-                    <select name="contract_duration" required
-                            class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-brand-green focus:outline-none transition-colors bg-white">
-                        <option value="14">14 {{ __('days') }}</option>
-                        <option value="30">30 {{ __('days') }}</option>
-                        <option value="90" selected>90 {{ __('days') }}</option>
-                        <option value="180">180 {{ __('days') }}</option>
-                        <option value="365">1 {{ __('year') }}</option>
-                    </select>
-                </div>
                 <button type="submit" class="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl hover:bg-green-600 transition-all flex items-center justify-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
