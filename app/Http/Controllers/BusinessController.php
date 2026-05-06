@@ -12,6 +12,58 @@ use Illuminate\Support\Facades\DB;
 
 class BusinessController extends Controller
 {
+    private function getRankingRowsForCategory(?int $categoryId)
+    {
+        if (!$categoryId) {
+            return collect();
+        }
+
+        $category = Category::select('id', 'parent_id')->find($categoryId);
+
+        if (!$category) {
+            return collect();
+        }
+
+        $candidateCategoryIds = [$category->id];
+
+        // For subcategories, fall back to parent rankings only when needed.
+        if ($category->parent_id) {
+            $candidateCategoryIds[] = $category->parent_id;
+        }
+
+        $rows = CategoryBusinessRanking::whereIn('category_id', $candidateCategoryIds)
+            ->orderByRaw('CASE WHEN category_id = ? THEN 0 ELSE 1 END', [$category->id])
+            ->orderBy('rank')
+            ->get(['business_id', 'category_id', 'rank']);
+
+        return $rows
+            ->groupBy('business_id')
+            ->map(fn ($businessRows) => $businessRows->first());
+    }
+
+    private function applyManagerRankings($businesses, ?int $categoryId)
+    {
+        $rankings = $this->getRankingRowsForCategory($categoryId);
+
+        if ($rankings->isEmpty()) {
+            return $businesses;
+        }
+
+        $ranked = collect();
+        $unranked = collect();
+
+        foreach ($businesses as $business) {
+            if ($rankings->has($business->id)) {
+                $business->manager_rank = $rankings[$business->id]->rank;
+                $ranked->push($business);
+            } else {
+                $unranked->push($business);
+            }
+        }
+
+        return $ranked->sortBy('manager_rank')->values()->merge($unranked->values());
+    }
+
     public function search(Request $request)
     {
         $query = Business::approved()->with(['category', 'subArea', 'reviews']);
@@ -41,7 +93,9 @@ class BusinessController extends Controller
                                      (min($business->views_count / 100, 5) * 0.3) + 
                                      (($business->is_featured ? 5 : 0) * 0.2);
             return $business;
-        })->sortByDesc('ranking_score');
+        })->sortByDesc('ranking_score')->values();
+
+        $businesses = $this->applyManagerRankings($businesses, $request->filled('category_id') ? (int) $request->category_id : null);
 
         $categories = Category::all();
         $districts = District::all();
@@ -76,7 +130,9 @@ class BusinessController extends Controller
                                      (min($business->views_count / 100, 5) * 0.3) + 
                                      (($business->is_featured ? 5 : 0) * 0.2);
             return $business;
-        })->sortByDesc('ranking_score');
+        })->sortByDesc('ranking_score')->values();
+
+        $businesses = $this->applyManagerRankings($businesses, $request->filled('category_id') ? (int) $request->category_id : null);
 
         $categories = Category::all();
         $districts = District::all();
@@ -135,10 +191,7 @@ class BusinessController extends Controller
         $businesses = $query->get();
 
         // Apply manager rankings: top 10 ordered, rest random
-        $rankings = CategoryBusinessRanking::where('category_id', $category->id)
-            ->orderBy('rank')
-            ->get()
-            ->keyBy('business_id');
+        $rankings = $this->getRankingRowsForCategory($category->id);
 
         if ($rankings->isNotEmpty()) {
             $ranked = collect();

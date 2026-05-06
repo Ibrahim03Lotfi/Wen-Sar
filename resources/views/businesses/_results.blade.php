@@ -1,37 +1,48 @@
 @forelse($businesses as $business)
 @php
-    $rankBorder = '';
+    $resolvedRankRaw = $business->manager_rank ?? null;
+    $resolvedRank = is_null($resolvedRankRaw) ? null : (int) $resolvedRankRaw;
+    $rankBorderColor = '';
     $rankBadge = '';
-    $rankBadgeClass = '';
-    if (isset($business->manager_rank) && $business->manager_rank <= 10) {
-        $rankBadge = $business->manager_rank;
-        $rankBadgeClass = match($business->manager_rank) {
-            1 => 'bg-yellow-500 border-yellow-600 text-white',
-            2 => 'bg-gray-400 border-gray-500 text-white',
-            3 => 'bg-orange-500 border-orange-600 text-white',
-            4, 5 => 'bg-blue-500 border-blue-600 text-white',
-            6, 7 => 'bg-purple-500 border-purple-600 text-white',
-            default => 'bg-teal-500 border-teal-600 text-white',
+    $rankBadgeBgColor = '';
+    $rankBadgeBorderColor = '';
+    if (!is_null($resolvedRank) && $resolvedRank >= 1 && $resolvedRank <= 10) {
+        $rankBadge = $resolvedRank;
+        $rankBadgeBgColor = match($resolvedRank) {
+            1 => '#eab308',
+            2 => '#9ca3af',
+            3 => '#f97316',
+            4, 5 => '#3b82f6',
+            6, 7 => '#a855f7',
+            default => '#14b8a6',
         };
-        $rankBorder = match($business->manager_rank) {
-            1 => 'border-yellow-400',
-            2 => 'border-gray-300',
-            3 => 'border-orange-400',
-            4, 5 => 'border-blue-300',
-            6, 7 => 'border-purple-300',
-            default => 'border-teal-300',
+        $rankBadgeBorderColor = match($resolvedRank) {
+            1 => '#ca8a04',
+            2 => '#6b7280',
+            3 => '#c2410c',
+            4, 5 => '#2563eb',
+            6, 7 => '#9333ea',
+            default => '#0f766e',
+        };
+        $rankBorderColor = match($resolvedRank) {
+            1 => '#facc15',
+            2 => '#d1d5db',
+            3 => '#fb923c',
+            4, 5 => '#93c5fd',
+            6, 7 => '#c4b5fd',
+            default => '#5eead4',
         };
     }
 @endphp
-<div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 {{ $rankBorder ?: 'border-gray-200' }} overflow-hidden group relative">
+<div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 overflow-hidden group relative" style="border-color: {{ $rankBorderColor ?: '#e5e7eb' }};">
     @if($rankBadge)
-    <div class="absolute top-0 left-0 z-10 {{ $rankBadgeClass }} text-xs font-bold px-3 py-1 rounded-br-lg shadow-md border-b-2 border-r-2">
+    <div class="absolute top-0 left-0 z-10 text-white text-xs font-bold px-3 py-1 rounded-br-lg shadow-md border-b-2 border-r-2" style="background-color: {{ $rankBadgeBgColor }}; border-color: {{ $rankBadgeBorderColor }};">
         #{{ $rankBadge }}
     </div>
     @endif
     <div class="flex flex-col md:flex-row">
         <!-- Image Section -->
-        <div class="w-full md:w-72 h-56 md:h-auto flex-shrink-0 bg-gray-100 relative overflow-hidden border-b-2 md:border-b-0 md:border-l-2 {{ $rankBorder ?: 'border-gray-200' }}">
+        <div class="w-full md:w-72 h-56 md:h-auto flex-shrink-0 bg-gray-100 relative overflow-hidden border-b-2 md:border-b-0 md:border-l-2" style="border-color: {{ $rankBorderColor ?: '#e5e7eb' }};">
             @if($business->logo)
                 <img src="{{ asset('storage/' . $business->logo) }}" alt="{{ $business->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
             @elseif($business->images && count($business->images) > 0)

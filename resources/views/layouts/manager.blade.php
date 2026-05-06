@@ -95,6 +95,34 @@
                     {{ __('Categories') }}
                 </a>
 
+                <a href="{{ route('manager.rankings.expired') }}" class="sidebar-link flex items-center justify-between gap-3 px-4 py-3 text-gray-600 hover:bg-brand-green/10 hover:text-brand-green rounded-xl transition-all {{ request()->routeIs('manager.rankings.*') ? 'active' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div class="flex items-center gap-2">
+                        {{ __('Expired Rankings') }}
+                        @php
+                            $expiredRankingsCount = 0;
+
+                            if (\Illuminate\Support\Facades\Schema::hasColumn('category_business_rankings', 'expires_at')) {
+                                $expiredRankingsCount = App\Models\CategoryBusinessRanking::whereNotNull('expires_at')
+                                    ->where('expires_at', '<=', now())
+                                    ->count();
+                            }
+                        @endphp
+                        @if($expiredRankingsCount > 0)
+                            <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $expiredRankingsCount }}</span>
+                        @endif
+                    </div>
+                </a>
+
+                <a href="{{ route('manager.ads.index') }}" class="sidebar-link flex items-center justify-between gap-3 px-4 py-3 text-gray-600 hover:bg-brand-green/10 hover:text-brand-green rounded-xl transition-all {{ request()->routeIs('manager.ads.*') ? 'active' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-6 4h10M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                    </svg>
+                    {{ __('Ads') }}
+                </a>
+
                 <div class="h-px bg-gray-100 mx-4"></div>
 
                 <hr class="my-2 border-gray-100">
@@ -197,6 +225,8 @@
                     <a href="{{ route('manager.businesses.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Businesses') }}</a>
                     <a href="{{ route('manager.owners.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Owners') }}</a>
                     <a href="{{ route('manager.categories.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Categories') }}</a>
+                    <a href="{{ route('manager.rankings.expired') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Expired Rankings') }}</a>
+                    <a href="{{ route('manager.ads.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Ads') }}</a>
 
                     <div class="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 pt-4 pb-1">{{ __('Locations') }}</div>
                     <a href="{{ route('manager.governorates.index') }}" class="block px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">{{ __('Governorates') }}</a>

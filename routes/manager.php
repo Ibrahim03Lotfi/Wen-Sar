@@ -10,6 +10,7 @@ use App\Http\Controllers\Manager\OwnerController;
 use App\Http\Controllers\Manager\ApprovalController;
 use App\Http\Controllers\Manager\ManagerController;
 use App\Http\Controllers\Manager\CategoryController;
+use App\Http\Controllers\Manager\AdController;
 use Illuminate\Support\Facades\Route;
 
 // Public manager routes
@@ -43,6 +44,15 @@ Route::prefix('manager')->name('manager.')->group(function () {
         Route::resource('categories', CategoryController::class);
         Route::get('/categories/{category}/rankings', [CategoryController::class, 'rankings'])->name('categories.rankings');
         Route::post('/categories/{category}/rankings', [CategoryController::class, 'updateRankings'])->name('categories.rankings.update');
+        Route::get('/rankings/expired', [CategoryController::class, 'expiredRankings'])->name('rankings.expired');
+        Route::delete('/rankings/{ranking}', [CategoryController::class, 'removeRanking'])->name('rankings.remove');
+        Route::post('/rankings/{ranking}/extend', [CategoryController::class, 'extendRanking'])->name('rankings.extend');
+
+        // Ads Management
+        Route::get('/ads', [AdController::class, 'index'])->name('ads.index');
+        Route::post('/ads', [AdController::class, 'store'])->name('ads.store');
+        Route::put('/ads/{ad}', [AdController::class, 'update'])->name('ads.update');
+        Route::delete('/ads/{ad}', [AdController::class, 'destroy'])->name('ads.destroy');
 
         // Business Owners
         Route::get('/owners', [OwnerController::class, 'index'])->name('owners.index');

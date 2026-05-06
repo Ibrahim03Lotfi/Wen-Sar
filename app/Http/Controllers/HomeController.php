@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Governorate;
 use App\Models\Category;
 use App\Models\Business;
+use App\Models\Ad;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
@@ -25,8 +27,11 @@ class HomeController extends Controller
             ->orderBy('featured_rank')
             ->take(6)
             ->get();
+        $ads = Schema::hasTable('ads')
+            ? Ad::latest()->take(6)->get()->values()
+            : collect();
 
-        return view('home', compact('governorates', 'categories', 'featuredBusinesses'));
+        return view('home', compact('governorates', 'categories', 'featuredBusinesses', 'ads'));
     }
 
     public function categories()

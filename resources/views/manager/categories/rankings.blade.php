@@ -14,11 +14,17 @@ $businessesData = $businesses->map(fn($b) => ['id' => (string)$b->id, 'name' => 
             rankings: rankingsData,
             businesses: businessesData,
             get usedIds() {
-                return Object.values(this.rankings).filter(function(v) { return v !== ''; });
+                return Object.values(this.rankings)
+                    .filter(function(v) { return v !== ''; })
+                    .map(function(v) { return String(v); });
             },
-            isAvailable: function(rank, businessId) {
-                if (this.rankings[rank] === businessId) return true;
-                return !this.usedIds.includes(businessId);
+            availableBusinesses: function(rank) {
+                var currentId = this.rankings[rank] ? String(this.rankings[rank]) : '';
+
+                return this.businesses.filter(function(business) {
+                    var businessId = String(business.id);
+                    return businessId === currentId || !this.usedIds.includes(businessId);
+                }, this);
             },
             selectedName: function(rank) {
                 var id = this.rankings[rank];
@@ -87,13 +93,49 @@ $businessesData = $businesses->map(fn($b) => ['id' => (string)$b->id, 'name' => 
                     </div>
                     <select name="rankings[{{ $rank }}]" x-model="rankings[{{ $rank }}]" class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm focus:ring-brand-green focus:border-brand-green bg-white">
                         <option value="">{{ __('-- Select a place --') }}</option>
-                        <template x-for="business in businesses" :key="business.id">
-                            <option :value="business.id" x-show="isAvailable({{ $rank }}, business.id)" x-text="business.name"></option>
+                        <template x-for="business in availableBusinesses({{ $rank }})" :key="business.id">
+                            <option :value="business.id" x-text="business.name"></option>
                         </template>
                     </select>
                     <p x-show="selectedName({{ $rank }})" class="text-xs text-gray-500 mt-2" x-cloak>
                         {{ __('Currently selected') }}: <span class="font-bold" x-text="selectedName({{ $rank }})"></span>
                     </p>
+                    @if(isset($rankings[$rank]) && $rankings[$rank]->expires_at)
+                        @php
+                            $isExpired = $rankings[$rank]->expires_at->isPast();
+                            $daysLeft = max(0, now()->diffInDays($rankings[$rank]->expires_at, false));
+                        @endphp
+                        <p class="text-xs mt-2 {{ $isExpired ? 'text-red-600' : 'text-gray-500' }}">
+                            {{ __('Ranking timer') }}:
+                            @if($isExpired)
+                                <span class="font-bold">{{ __('Expired') }}</span>
+                            @else
+                                <span class="font-bold">{{ __(':days days left', ['days' => $daysLeft]) }}</span>
+                            @endif
+                        </p>
+                    @endif
+
+                    @if(isset($rankings[$rank]))
+                        <div class="mt-3 flex items-center gap-2">
+                            <button
+                                type="button"
+                                onclick="if(confirm('{{ __('Are you sure?') }}')) document.getElementById('remove-ranking-{{ $rankings[$rank]->id }}').submit();"
+                                class="bg-red-100 text-red-700 text-xs font-bold py-2 px-3 rounded-lg hover:bg-red-200 transition-all"
+                            >
+                                {{ __('Remove from rank') }}
+                            </button>
+
+                            @if($rankings[$rank]->expires_at && $rankings[$rank]->expires_at->isPast())
+                                <button
+                                    type="button"
+                                    onclick="document.getElementById('extend-ranking-{{ $rankings[$rank]->id }}').submit();"
+                                    class="bg-brand-green text-white text-xs font-bold py-2 px-3 rounded-lg hover:opacity-90 transition-all"
+                                >
+                                    {{ __('Keep 14 more days') }}
+                                </button>
+                            @endif
+                        </div>
+                    @endif
                 </div>
                 @endfor
             </div>
@@ -109,6 +151,17 @@ $businessesData = $businesses->map(fn($b) => ['id' => (string)$b->id, 'name' => 
             </a>
         </div>
     </form>
+
+    @foreach($rankings as $ranking)
+        <form id="remove-ranking-{{ $ranking->id }}" method="POST" action="{{ route('manager.rankings.remove', $ranking) }}" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+
+        <form id="extend-ranking-{{ $ranking->id }}" method="POST" action="{{ route('manager.rankings.extend', $ranking) }}" class="hidden">
+            @csrf
+        </form>
+    @endforeach
     @else
     <div class="bg-white rounded-xl shadow-sm p-12 text-center">
         <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

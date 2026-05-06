@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class CategoryBusinessRanking extends Model
 {
-    protected $fillable = ['category_id', 'business_id', 'rank'];
+    protected $fillable = ['category_id', 'business_id', 'rank', 'expires_at'];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+    ];
 
     public function category()
     {

@@ -12,11 +12,17 @@ $businessesData = $businesses->map(fn($b) => ['id' => (string)$b->id, 'name' => 
             rankings: rankingsData,
             businesses: businessesData,
             get usedIds() {
-                return Object.values(this.rankings).filter(function(v) { return v !== ''; });
+                return Object.values(this.rankings)
+                    .filter(function(v) { return v !== ''; })
+                    .map(function(v) { return String(v); });
             },
-            isAvailable: function(rank, businessId) {
-                if (this.rankings[rank] === businessId) return true;
-                return !this.usedIds.includes(businessId);
+            availableBusinesses: function(rank) {
+                var currentId = this.rankings[rank] ? String(this.rankings[rank]) : '';
+
+                return this.businesses.filter(function(business) {
+                    var businessId = String(business.id);
+                    return businessId === currentId || !this.usedIds.includes(businessId);
+                }, this);
             },
             selectedName: function(rank) {
                 var id = this.rankings[rank];
@@ -86,13 +92,51 @@ $businessesData = $businesses->map(fn($b) => ['id' => (string)$b->id, 'name' => 
                     </div>
                     <select name="rankings[<?php echo e($rank); ?>]" x-model="rankings[<?php echo e($rank); ?>]" class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm focus:ring-brand-green focus:border-brand-green bg-white">
                         <option value=""><?php echo e(__('-- Select a place --')); ?></option>
-                        <template x-for="business in businesses" :key="business.id">
-                            <option :value="business.id" x-show="isAvailable(<?php echo e($rank); ?>, business.id)" x-text="business.name"></option>
+                        <template x-for="business in availableBusinesses(<?php echo e($rank); ?>)" :key="business.id">
+                            <option :value="business.id" x-text="business.name"></option>
                         </template>
                     </select>
                     <p x-show="selectedName(<?php echo e($rank); ?>)" class="text-xs text-gray-500 mt-2" x-cloak>
                         <?php echo e(__('Currently selected')); ?>: <span class="font-bold" x-text="selectedName(<?php echo e($rank); ?>)"></span>
                     </p>
+                    <?php if(isset($rankings[$rank]) && $rankings[$rank]->expires_at): ?>
+                        <?php
+                            $isExpired = $rankings[$rank]->expires_at->isPast();
+                            $daysLeft = max(0, now()->diffInDays($rankings[$rank]->expires_at, false));
+                        ?>
+                        <p class="text-xs mt-2 <?php echo e($isExpired ? 'text-red-600' : 'text-gray-500'); ?>">
+                            <?php echo e(__('Ranking timer')); ?>:
+                            <?php if($isExpired): ?>
+                                <span class="font-bold"><?php echo e(__('Expired')); ?></span>
+                            <?php else: ?>
+                                <span class="font-bold"><?php echo e(__(':days days left', ['days' => $daysLeft])); ?></span>
+                            <?php endif; ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php if(isset($rankings[$rank])): ?>
+                        <div class="mt-3 flex items-center gap-2">
+                            <button
+                                type="button"
+                                onclick="if(confirm('<?php echo e(__('Are you sure?')); ?>')) document.getElementById('remove-ranking-<?php echo e($rankings[$rank]->id); ?>').submit();"
+                                class="bg-red-100 text-red-700 text-xs font-bold py-2 px-3 rounded-lg hover:bg-red-200 transition-all"
+                            >
+                                <?php echo e(__('Remove from rank')); ?>
+
+                            </button>
+
+                            <?php if($rankings[$rank]->expires_at && $rankings[$rank]->expires_at->isPast()): ?>
+                                <button
+                                    type="button"
+                                    onclick="document.getElementById('extend-ranking-<?php echo e($rankings[$rank]->id); ?>').submit();"
+                                    class="bg-brand-green text-white text-xs font-bold py-2 px-3 rounded-lg hover:opacity-90 transition-all"
+                                >
+                                    <?php echo e(__('Keep 14 more days')); ?>
+
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <?php endfor; ?>
             </div>
@@ -110,6 +154,17 @@ $businessesData = $businesses->map(fn($b) => ['id' => (string)$b->id, 'name' => 
             </a>
         </div>
     </form>
+
+    <?php $__currentLoopData = $rankings; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ranking): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <form id="remove-ranking-<?php echo e($ranking->id); ?>" method="POST" action="<?php echo e(route('manager.rankings.remove', $ranking)); ?>" class="hidden">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('DELETE'); ?>
+        </form>
+
+        <form id="extend-ranking-<?php echo e($ranking->id); ?>" method="POST" action="<?php echo e(route('manager.rankings.extend', $ranking)); ?>" class="hidden">
+            <?php echo csrf_field(); ?>
+        </form>
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     <?php else: ?>
     <div class="bg-white rounded-xl shadow-sm p-12 text-center">
         <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

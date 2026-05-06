@@ -8,6 +8,8 @@ use App\Models\Business;
 use App\Models\CategoryBusinessRanking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Carbon;
 
 class CategoryController extends Controller
 {
@@ -110,12 +112,47 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        $rankings = CategoryBusinessRanking::where('category_id', $category->id)
+        $rankings = CategoryBusinessRanking::with('business:id,name')
+            ->where('category_id', $category->id)
             ->orderBy('rank')
             ->get()
             ->keyBy('rank');
 
         return view('manager.categories.rankings', compact('category', 'businesses', 'rankings'));
+    }
+
+    public function expiredRankings()
+    {
+        if (!Schema::hasColumn('category_business_rankings', 'expires_at')) {
+            $expiredRankings = CategoryBusinessRanking::whereRaw('1 = 0')->paginate(20);
+
+            return view('manager.rankings.expired', compact('expiredRankings'))
+                ->with('error', __('Ranking expiration is not available yet. Please run migrations.'));
+        }
+
+        $expiredRankings = CategoryBusinessRanking::with(['category:id,name', 'business:id,name'])
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now())
+            ->orderBy('expires_at')
+            ->paginate(20);
+
+        return view('manager.rankings.expired', compact('expiredRankings'));
+    }
+
+    public function removeRanking(CategoryBusinessRanking $ranking)
+    {
+        $ranking->delete();
+
+        return back()->with('success', __('Place removed from rankings successfully.'));
+    }
+
+    public function extendRanking(CategoryBusinessRanking $ranking)
+    {
+        $ranking->update([
+            'expires_at' => now()->addDays(14),
+        ]);
+
+        return back()->with('success', __('Place ranking extended for another 14 days.'));
     }
 
     public function updateRankings(Request $request, Category $category)
@@ -133,24 +170,29 @@ class CategoryController extends Controller
         }
 
         DB::transaction(function () use ($rankings, $category) {
-            CategoryBusinessRanking::where('category_id', $category->id)->delete();
-
-            $insertData = [];
-
             foreach ($rankings as $rank => $businessId) {
-                if ($businessId) {
-                    $insertData[] = [
-                        'category_id' => $category->id,
-                        'business_id' => $businessId,
-                        'rank' => (int) $rank,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
+                if (!$businessId) {
+                    continue;
                 }
-            }
 
-            if (!empty($insertData)) {
-                CategoryBusinessRanking::insert($insertData);
+                CategoryBusinessRanking::where('category_id', $category->id)
+                    ->where('rank', (int) $rank)
+                    ->where('business_id', '!=', (int) $businessId)
+                    ->delete();
+
+                $ranking = CategoryBusinessRanking::firstOrNew([
+                    'category_id' => $category->id,
+                    'business_id' => (int) $businessId,
+                ]);
+
+                $ranking->rank = (int) $rank;
+
+                // Start 14-day timer when a business is ranked for the first time.
+                if (Schema::hasColumn('category_business_rankings', 'expires_at') && !$ranking->expires_at) {
+                    $ranking->expires_at = Carbon::now()->addDays(14);
+                }
+
+                $ranking->save();
             }
         });
 

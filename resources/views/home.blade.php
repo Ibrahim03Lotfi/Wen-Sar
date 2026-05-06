@@ -143,6 +143,174 @@
     </div>
 </div>
 
+<!-- Ads Carousel -->
+<div class="max-w-7xl mx-auto px-4 pt-8 md:pt-12 sm:px-6 lg:px-8">
+    @php
+        $adSlides = $ads->values()->reverse()->values()->pad(6, null)->take(6);
+    @endphp
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+        <h2 class="text-lg md:text-2xl font-extrabold text-gray-800">{{ __('Ads') }}</h2>
+        <span class="text-xs md:text-sm font-bold text-brand-green bg-brand-green/10 px-3 py-1 rounded-full">{{ __('Sponsored') }}</span>
+    </div>
+    <div id="ads-carousel" class="relative">
+        <div class="overflow-hidden rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 bg-white">
+            <div id="ads-track" class="flex transition-transform duration-700 ease-in-out">
+                @foreach($adSlides as $index => $ad)
+                <div class="ads-slide shrink-0 p-2 md:p-3" style="width: 100%;" data-index="{{ $index }}">
+                    <div class="relative rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-white" style="height: clamp(11rem, 36vw, 20rem); min-height: 11rem;">
+                        @if($ad)
+                            <div class="ad-image-fallback h-full w-full bg-gradient-to-r from-brand-green via-emerald-700 to-brand-green flex items-center justify-center px-6 text-center">
+                                <p class="text-white text-lg md:text-3xl font-extrabold tracking-wide">{{ 'استفيد من نشر اعلانك مع وين صار!' }}</p>
+                            </div>
+                            <img
+                                src="{{ asset('storage/' . $ad->image_path) }}"
+                                alt="Ad {{ $index + 1 }}"
+                                loading="eager"
+                                onerror="this.style.display='none';"
+                                class="absolute inset-0 z-10 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                            >
+                            <div class="absolute inset-0 z-20 pointer-events-none bg-gradient-to-r from-black/20 via-transparent to-black/10"></div>
+                        @else
+                            <div class="h-full w-full bg-gradient-to-r from-brand-green via-emerald-700 to-brand-green flex items-center justify-center px-6 text-center">
+                                <p class="text-white text-lg md:text-3xl font-extrabold tracking-wide">{{ 'استفيد من نشر اعلانك مع وين صار!' }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        <button id="ads-right" type="button" class="absolute top-1/2 -translate-y-1/2 right-3 md:right-5 bg-white/95 hover:bg-white text-brand-green border border-brand-green/20 w-10 h-10 md:w-11 md:h-11 rounded-full shadow-xl flex items-center justify-center transition-all z-30">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+        <button id="ads-left" type="button" class="absolute top-1/2 -translate-y-1/2 left-3 md:left-5 bg-white/95 hover:bg-white text-brand-green border border-brand-green/20 w-10 h-10 md:w-11 md:h-11 rounded-full shadow-xl flex items-center justify-center transition-all z-30">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
+        <div id="ads-dots" class="flex justify-center mt-5 gap-4">
+            @foreach($adSlides as $index => $ad)
+            <button
+                type="button"
+                class="ads-dot w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all {{ $index === 0 ? 'bg-brand-green scale-110' : 'bg-gray-300 hover:bg-gray-400' }}"
+                data-index="{{ $index }}"
+                aria-label="Go to slide {{ $index + 1 }}"
+            ></button>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        var carousel = document.getElementById('ads-carousel');
+        if (!carousel) return;
+
+        var track = document.getElementById('ads-track');
+        var slides = Array.from(carousel.querySelectorAll('.ads-slide'));
+        var dots = Array.from(carousel.querySelectorAll('.ads-dot'));
+        var rightBtn = document.getElementById('ads-right');
+        var leftBtn = document.getElementById('ads-left');
+        var current = 0;
+        var intervalId = null;
+        var total = slides.length;
+        var isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+        var touchStartX = 0;
+        var touchEndX = 0;
+
+        function perView() {
+            return 1;
+        }
+
+        function maxIndex() {
+            return Math.max(0, total - perView());
+        }
+
+        function updateSlideWidths() {
+            var width = 100 / perView();
+            slides.forEach(function(slide) {
+                slide.style.width = width + '%';
+            });
+        }
+
+        function render() {
+            if (current > maxIndex()) current = maxIndex();
+            var shift = (100 / perView()) * current;
+            track.style.transform = isRtl
+                ? 'translateX(' + shift + '%)'
+                : 'translateX(-' + shift + '%)';
+
+            dots.forEach(function(dot, index) {
+                var pageIndex = Math.min(index, maxIndex());
+                dot.classList.toggle('bg-brand-green', index === current);
+                dot.classList.toggle('scale-110', index === current);
+                dot.classList.toggle('bg-gray-300', index !== current);
+                dot.classList.toggle('hover:bg-gray-400', index !== current);
+                dot.style.display = '';
+                dot.setAttribute('data-index', pageIndex);
+            });
+        }
+
+        function next() {
+            // Move visually from right to left.
+            current = current >= maxIndex() ? 0 : current + 1;
+            render();
+        }
+
+        function prev() {
+            current = current <= 0 ? maxIndex() : current - 1;
+            render();
+        }
+
+        function startAuto() {
+            stopAuto();
+            intervalId = setInterval(next, 5000);
+        }
+
+        function stopAuto() {
+            if (!intervalId) return;
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+
+        // Left arrow moves slides visually to the left.
+        leftBtn.addEventListener('click', next);
+        // Right arrow moves slides visually to the right.
+        rightBtn.addEventListener('click', prev);
+        dots.forEach(function(dot) {
+            dot.addEventListener('click', function() {
+                var index = Number(dot.getAttribute('data-index'));
+                if (!Number.isNaN(index)) {
+                    current = index;
+                    render();
+                }
+            });
+        });
+
+        carousel.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        carousel.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 40) next();
+            if (touchEndX - touchStartX > 40) prev();
+        }, { passive: true });
+        window.addEventListener('resize', function() {
+            updateSlideWidths();
+            render();
+        });
+
+        updateSlideWidths();
+        current = 0;
+        render();
+        startAuto();
+    })();
+</script>
+
 <!-- Categories Grid -->
 <div class="max-w-7xl mx-auto px-4 py-10 md:py-16 sm:px-6 lg:px-8">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-10 gap-3">
