@@ -32,17 +32,20 @@ class SecurityHeaders
         // Permissions Policy
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
-        // Content Security Policy (CSP) - Temporarily disabled to fix layout
-        // $csp = "default-src 'self'; ";
-        // $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval'; ";
-        // $csp .= "style-src 'self' 'unsafe-inline'; ";
-        // $csp .= "img-src 'self' data: https: blob:; ";
-        // $csp .= "font-src 'self'; ";
-        // $csp .= "connect-src 'self'; ";
-        // $csp .= "frame-ancestors 'self'; ";
-        // $csp .= "base-uri 'self'; ";
-        // $csp .= "form-action 'self';";
-        // $response->headers->set('Content-Security-Policy', $csp);
+        // Content Security Policy (CSP)
+        $csp = "default-src 'self'; ";
+        $csp .= "script-src 'self' 'unsafe-inline'; ";
+        $csp .= "style-src 'self' 'unsafe-inline'; ";
+        $csp .= "img-src 'self' data: https: blob:; ";
+        $csp .= "font-src 'self'; ";
+        $csp .= "connect-src 'self'; ";
+        $csp .= "frame-ancestors 'self'; ";
+        $csp .= "base-uri 'self'; ";
+        $csp .= "form-action 'self';";
+
+        // Enforce CSP in production, Report-Only in other environments
+        $cspHeader = app()->environment('production') ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only';
+        $response->headers->set($cspHeader, $csp);
 
         // Strict Transport Security (HSTS) - only in production with HTTPS
         if (app()->environment('production') && $request->isSecure()) {

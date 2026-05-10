@@ -63,7 +63,9 @@ class BusinessController extends Controller
                 'instagram' => 'nullable|url|max:255',
             ]);
 
-            \Log::info('Business store attempt', ['validated' => $validated]);
+            if (app()->environment('local')) {
+                \Log::info('Business store attempt', ['validated' => $validated]);
+            }
 
             $validated['owner_id'] = Auth::id();
 
@@ -99,39 +101,41 @@ class BusinessController extends Controller
 
             // Handle logo upload
             $logoFile = $request->file('logo');
-            \Log::info('Logo upload attempt', [
-                'original_name' => $logoFile->getClientOriginalName(),
-                'size' => $logoFile->getSize(),
-                'mime' => $logoFile->getMimeType(),
-                'temp_path' => $logoFile->getRealPath(),
-            ]);
+            if (app()->environment('local')) {
+                \Log::info('Logo upload attempt', [
+                    'original_name' => $logoFile->getClientOriginalName(),
+                    'size' => $logoFile->getSize(),
+                    'mime' => $logoFile->getMimeType(),
+                ]);
+            }
 
             $logoPath = $logoFile->store('logos', 'public');
             $validated['logo'] = $logoPath;
 
-            \Log::info('Logo stored', [
-                'stored_path' => $logoPath,
-                'full_path' => storage_path('app/public/' . $logoPath),
-                'exists_after_store' => file_exists(storage_path('app/public/' . $logoPath)),
-            ]);
+            if (app()->environment('local')) {
+                \Log::info('Logo stored', ['stored_path' => $logoPath]);
+            }
 
             // Handle images upload
             $imagePaths = [];
             foreach ($request->file('images') as $index => $image) {
-                \Log::info('Image upload attempt', [
-                    'index' => $index,
-                    'original_name' => $image->getClientOriginalName(),
-                    'size' => $image->getSize(),
-                ]);
+                if (app()->environment('local')) {
+                    \Log::info('Image upload attempt', [
+                        'index' => $index,
+                        'original_name' => $image->getClientOriginalName(),
+                        'size' => $image->getSize(),
+                    ]);
+                }
 
                 $path = $image->store('business_images', 'public');
                 $imagePaths[] = $path;
 
-                \Log::info('Image stored', [
-                    'index' => $index,
-                    'stored_path' => $path,
-                    'exists_after_store' => file_exists(storage_path('app/public/' . $path)),
-                ]);
+                if (app()->environment('local')) {
+                    \Log::info('Image stored', [
+                        'index' => $index,
+                        'stored_path' => $path,
+                    ]);
+                }
             }
             $validated['images'] = $imagePaths;
 
@@ -161,15 +165,23 @@ class BusinessController extends Controller
 
             $validated['status'] = 'pending';
 
-            \Log::info('Before store', ['validated' => $validated]);
+            if (app()->environment('local')) {
+                \Log::info('Before store', ['validated' => $validated]);
+            }
 
             Business::create($validated);
 
-            \Log::info('After store');
+            if (app()->environment('local')) {
+                \Log::info('After store');
+            }
 
             return redirect()->route('owner.businesses.index')->with('success', 'تم تقديم المنشأة بنجاح وهي بانتظار الموافقة.');
         } catch (\Exception $e) {
-            \Log::error('Business store failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $logContext = ['error' => $e->getMessage(), 'class' => get_class($e)];
+            if (app()->environment('local')) {
+                $logContext['trace'] = $e->getTraceAsString();
+            }
+            \Log::error('Business store failed', $logContext);
             return back()->withInput()->with('error', 'حدث خطأ أثناء إضافة المنشأة: ' . $e->getMessage());
         }
     }
@@ -197,7 +209,9 @@ class BusinessController extends Controller
                 Storage::disk('public')->makeDirectory('business_images');
             }
 
-            \Log::info('Business update attempt', ['business_id' => $business->id, 'request_data' => $request->except(['logo', 'images'])]);
+            if (app()->environment('local')) {
+                \Log::info('Business update attempt', ['business_id' => $business->id]);
+            }
 
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -223,7 +237,9 @@ class BusinessController extends Controller
                 'instagram' => 'nullable|url|max:255',
             ]);
 
-            \Log::info('Validation passed', ['validated' => $validated]);
+            if (app()->environment('local')) {
+                \Log::info('Validation passed', ['validated' => $validated]);
+            }
 
             // Handle logo upload
             if ($request->hasFile('logo')) {
@@ -315,15 +331,23 @@ class BusinessController extends Controller
             ];
             $validated['business_hours'] = $businessHours;
 
-            \Log::info('Before update', ['validated' => $validated]);
+            if (app()->environment('local')) {
+                \Log::info('Before update', ['validated' => $validated]);
+            }
 
             $business->update($validated);
 
-            \Log::info('After update', ['business_id' => $business->id]);
+            if (app()->environment('local')) {
+                \Log::info('After update', ['business_id' => $business->id]);
+            }
 
             return redirect()->route('owner.businesses.index')->with('success', 'تم تحديث البيانات بنجاح.');
         } catch (\Exception $e) {
-            \Log::error('Business update failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $logContext = ['error' => $e->getMessage(), 'class' => get_class($e)];
+            if (app()->environment('local')) {
+                $logContext['trace'] = $e->getTraceAsString();
+            }
+            \Log::error('Business update failed', $logContext);
             return back()->withInput()->with('error', 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage());
         }
     }
