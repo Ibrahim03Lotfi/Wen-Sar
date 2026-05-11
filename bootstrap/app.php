@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'manager.auth' => \App\Http\Middleware\ManagerAuth::class,
             'no.managers' => \App\Http\Middleware\RedirectIfManagersExist::class,
+            'redirect.select' => \App\Http\Middleware\RedirectToSelectRole::class,
         ]);
 
         $middleware->web(append: [

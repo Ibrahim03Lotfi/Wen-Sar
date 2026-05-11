@@ -31,11 +31,11 @@ Route::get('/business/{business}', [BusinessController::class, 'show'])->name('b
 Route::get('/category/{category}', [BusinessController::class, 'category'])->name('business.category');
 Route::get('/featured', [BusinessController::class, 'featured'])->name('business.featured');
 
-Route::get('/favorites', [FavoriteController::class, 'index'])->middleware('auth')->name('favorites.index');
-Route::post('/favorites/{business}/toggle', [FavoriteController::class, 'toggle'])->middleware(['auth', 'throttle:favorite'])->name('favorites.toggle');
-Route::post('/favorites/{business}', [FavoriteController::class, 'store'])->middleware(['auth', 'throttle:favorite'])->name('favorites.store');
-Route::delete('/favorites/{business}', [FavoriteController::class, 'destroy'])->middleware(['auth', 'throttle:favorite'])->name('favorites.destroy');
-Route::post('/business/{business}/reviews', [ReviewController::class, 'store'])->middleware(['auth', 'throttle:review'])->name('reviews.store');
+Route::get('/favorites', [FavoriteController::class, 'index'])->middleware('redirect.select')->name('favorites.index');
+Route::post('/favorites/{business}/toggle', [FavoriteController::class, 'toggle'])->middleware(['redirect.select', 'throttle:favorite'])->name('favorites.toggle');
+Route::post('/favorites/{business}', [FavoriteController::class, 'store'])->middleware(['redirect.select', 'throttle:favorite'])->name('favorites.store');
+Route::delete('/favorites/{business}', [FavoriteController::class, 'destroy'])->middleware(['redirect.select', 'throttle:favorite'])->name('favorites.destroy');
+Route::post('/business/{business}/reviews', [ReviewController::class, 'store'])->middleware(['redirect.select', 'throttle:review'])->name('reviews.store');
 
 Route::middleware(['auth'])->prefix('owner')->name('owner.')->group(function () {
     Route::get('/businesses', [OwnerBusinessController::class, 'index'])->name('businesses.index');

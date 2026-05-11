@@ -97,8 +97,8 @@
                         <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-3">تسجيل الدخول مطلوب</h3>
                         <p class="text-gray-500 text-sm md:text-base mb-8">يجب تسجيل الدخول أو إنشاء حساب جديد لإضافة الأماكن إلى قائمة المفضلة</p>
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <a href="<?php echo e(route('login')); ?>" class="flex-1 bg-brand-green text-white font-bold py-3 px-6 rounded-xl hover:opacity-90 transition-all">تسجيل الدخول</a>
-                            <a href="<?php echo e(route('register')); ?>" class="flex-1 bg-gray-100 text-gray-700 font-bold py-3 px-6 rounded-xl hover:bg-gray-200 transition-all">إنشاء حساب</a>
+                            <a href="<?php echo e(route('select-role')); ?>" class="flex-1 bg-brand-green text-white font-bold py-3 px-6 rounded-xl hover:opacity-90 transition-all">تسجيل الدخول</a>
+                            <a href="<?php echo e(route('select-role')); ?>?action=register" class="flex-1 bg-gray-100 text-gray-700 font-bold py-3 px-6 rounded-xl hover:bg-gray-200 transition-all">إنشاء حساب</a>
                         </div>
                         <button @click="showLoginAlert = false" class="mt-4 text-gray-400 text-sm hover:text-gray-600 transition-colors">إغلاق</button>
                     </div>
@@ -189,7 +189,7 @@
                 <?php else: ?>
                 <div class="text-center py-5 md:py-6 border rounded-2xl md:rounded-3xl mb-6 md:mb-10 bg-gray-50">
                     <p class="text-gray-500 font-bold mb-3 md:mb-4 text-sm md:text-base">يجب عليك تسجيل الدخول للمشاركة برأيك</p>
-                    <a href="<?php echo e(route('login')); ?>" class="text-brand-green font-bold underline text-sm md:text-base">تسجيل الدخول</a>
+                    <a href="<?php echo e(route('select-role')); ?>" class="text-brand-green font-bold underline text-sm md:text-base">تسجيل الدخول</a>
                 </div>
                 <?php endif; ?>
                 

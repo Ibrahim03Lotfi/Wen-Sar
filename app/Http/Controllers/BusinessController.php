@@ -95,7 +95,8 @@ class BusinessController extends Controller
             return $business;
         })->sortByDesc('ranking_score')->values();
 
-        $businesses = $this->applyManagerRankings($businesses, $request->filled('category_id') ? (int) $request->category_id : null);
+        // Shuffle results for search (no ranking system)
+        $businesses = $businesses->shuffle()->values();
 
         $categories = Category::all();
         $districts = District::all();
@@ -132,7 +133,8 @@ class BusinessController extends Controller
             return $business;
         })->sortByDesc('ranking_score')->values();
 
-        $businesses = $this->applyManagerRankings($businesses, $request->filled('category_id') ? (int) $request->category_id : null);
+        // Shuffle results for search (no ranking system)
+        $businesses = $businesses->shuffle()->values();
 
         $categories = Category::all();
         $districts = District::all();

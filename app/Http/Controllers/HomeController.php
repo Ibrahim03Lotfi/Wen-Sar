@@ -15,8 +15,8 @@ class HomeController extends Controller
     {
         $governorates = Governorate::with('districts')->get();
         $categories = Category::whereNull('parent_id')
-            ->with(['subcategories' => fn($q) => $q->withCount('businesses')])
-            ->withCount('businesses')
+            ->with(['subcategories' => fn($q) => $q->withCount(['businesses as businesses_count' => fn($q) => $q->approved()])])
+            ->withCount(['businesses as businesses_count' => fn($q) => $q->approved()])
             ->get()
             ->map(function ($cat) {
                 $cat->total_businesses_count = $cat->totalBusinessesCount();
@@ -37,8 +37,8 @@ class HomeController extends Controller
     public function categories()
     {
         $categories = Category::whereNull('parent_id')
-            ->with(['subcategories' => fn($q) => $q->withCount('businesses')])
-            ->withCount('businesses')
+            ->with(['subcategories' => fn($q) => $q->withCount(['businesses as businesses_count' => fn($q) => $q->approved()])])
+            ->withCount(['businesses as businesses_count' => fn($q) => $q->approved()])
             ->get()
             ->map(function ($cat) {
                 $cat->total_businesses_count = $cat->totalBusinessesCount();

@@ -43,7 +43,7 @@ class Category extends Model
         if ($this->relationLoaded('subcategories')) {
             $subCount = $this->subcategories->sum('businesses_count');
         } else {
-            $subCount = $this->subcategories()->withCount('businesses')->get()->sum('businesses_count');
+            $subCount = $this->subcategories()->withCount(['businesses as businesses_count' => fn($q) => $q->approved()])->get()->sum('businesses_count');
         }
 
         return ($this->businesses_count ?? 0) + $subCount;

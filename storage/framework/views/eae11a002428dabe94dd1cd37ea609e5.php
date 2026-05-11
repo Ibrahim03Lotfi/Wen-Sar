@@ -1,9 +1,6 @@
 <?php $__env->startSection('content'); ?>
 <!-- Hero Section -->
 <div class="relative bg-brand-green overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
-        <img src="https://images.unsplash.com/photo-1549136365-5c1a1795f57a?q=80&w=2070&auto=format&fit=crop" alt="Damascus" class="w-full h-full object-cover">
-    </div>
     <div class="relative max-w-7xl mx-auto px-4 py-16 md:py-24 lg:py-32 sm:px-6 lg:px-8 flex flex-col items-center text-center">
         <h1 class="text-2xl sm:text-4xl lg:text-6xl font-extrabold text-white mb-4 md:mb-6 leading-tight">
             <?php echo e(__('Your comprehensive guide in')); ?> <span class="text-orange-400"><?php echo e(__('Syria')); ?></span>
