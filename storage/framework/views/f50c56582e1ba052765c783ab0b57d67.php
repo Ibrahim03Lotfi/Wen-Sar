@@ -13,7 +13,7 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased font-sans" x-data="{ mobileMenuOpen: false, termsOpen: false, privacyOpen: false, fbToast: false }">
+<body class="bg-gray-50 text-gray-900 antialiased font-sans" x-data="layout()">
     <!-- Splash Screen -->
     <?php if (isset($component)) { $__componentOriginal1cf7ddb08d3976da931ed0aee29f0761 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal1cf7ddb08d3976da931ed0aee29f0761 = $attributes; } ?>
@@ -264,7 +264,7 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" @click.stop="privacyOpen = false" onclick="document.body.__x.$data.privacyOpen = false" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-green text-base font-medium text-white hover:opacity-90 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" @click.stop="acknowledgePrivacy()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-green text-base font-medium text-white hover:opacity-90 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
                         فهمت
                     </button>
                 </div>
@@ -273,4 +273,33 @@
     </div>
 </body>
 </html>
+
+<script>
+    // Alpine layout state factory
+    function layout() {
+        // Check if user already acknowledged privacy in this session
+        const privacyAcknowledged = sessionStorage.getItem('privacyAcknowledged') === 'true';
+
+        return {
+            mobileMenuOpen: false,
+            termsOpen: false,
+            privacyOpen: false,
+            fbToast: false,
+            // On component init, don't auto-open privacy if acknowledged
+            init() {
+                if (!privacyAcknowledged) {
+                    // do nothing: keep privacyOpen false so it won't auto-open
+                }
+            },
+            acknowledgePrivacy() {
+                this.privacyOpen = false;
+                try {
+                    sessionStorage.setItem('privacyAcknowledged', 'true');
+                } catch (e) {
+                    // ignore storage errors
+                }
+            }
+        }
+    }
+</script>
 <?php /**PATH C:\Users\LENOVO\Desktop\Wen-Sar\resources\views/layouts/app.blade.php ENDPATH**/ ?>
