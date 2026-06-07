@@ -1,69 +1,80 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="<?php echo e(app()->getLocale()); ?>" dir="<?php echo e(app()->getLocale() == 'ar' ? 'rtl' : 'ltr'); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ config('app.name', 'وين صار') }}</title>
+    <title><?php echo e(config('app.name', 'وين صار')); ?></title>
     
     <!-- Scripts & Styles -->
-    @vite(['resources/js/app.js', 'resources/css/app.css'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/js/app.js', 'resources/css/app.css']); ?>
     
     <style>
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased font-sans" x-data="layout()">
+<body class="bg-gray-50 text-gray-900 antialiased font-sans" x-data="{ mobileMenuOpen: false, termsOpen: false, privacyOpen: false, fbToast: false }">
     <!-- Splash Screen -->
-    <x-splash-screen />
+    <?php if (isset($component)) { $__componentOriginal1cf7ddb08d3976da931ed0aee29f0761 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal1cf7ddb08d3976da931ed0aee29f0761 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.splash-screen','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('splash-screen'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal1cf7ddb08d3976da931ed0aee29f0761)): ?>
+<?php $attributes = $__attributesOriginal1cf7ddb08d3976da931ed0aee29f0761; ?>
+<?php unset($__attributesOriginal1cf7ddb08d3976da931ed0aee29f0761); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal1cf7ddb08d3976da931ed0aee29f0761)): ?>
+<?php $component = $__componentOriginal1cf7ddb08d3976da931ed0aee29f0761; ?>
+<?php unset($__componentOriginal1cf7ddb08d3976da931ed0aee29f0761); ?>
+<?php endif; ?>
     
     <header class="bg-brand-white shadow-sm sticky top-0 z-50 border-b border-gray-100 will-change-transform" style="transform: translateZ(0);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 md:h-20 items-center justify-between">
                 <!-- Logo (Right in RTL) -->
                 <div class="flex items-center flex-1 justify-end relative -mr-4 md:-mr-6 lg:-mr-8">
-                    <a href="{{ url('/') }}" class="flex items-center absolute right-0">
-                       <img src="{{ asset('images/IMG_20260414_145531_107.png') }}" alt="وين صار" class="h-16 md:h-20 w-auto ml-3"> 
-                       <!-- <img src="{{ asset('images/full logo green png.png') }}" alt="وين صار" class="h-20 md:h-32 w-auto"> -->
+                    <a href="<?php echo e(url('/')); ?>" class="flex items-center absolute right-0">
+                       <img src="<?php echo e(asset('images/IMG_20260414_145531_107.png')); ?>" alt="وين صار" class="h-16 md:h-20 w-auto ml-3"> 
+                       <!-- <img src="<?php echo e(asset('images/full logo green png.png')); ?>" alt="وين صار" class="h-20 md:h-32 w-auto"> -->
                     </a>
                 </div>
 
                 <!-- Desktop Navigation (Center) -->
                 <nav class="hidden md:flex justify-center items-center gap-6 lg:gap-8">
-                    {{-- Language Switcher - Temporarily hidden
-                    <a href="{{ route('lang.switch', app()->getLocale() == 'ar' ? 'en' : 'ar') }}" 
-                       class="flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-200 hover:border-brand-green hover:text-brand-green transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                        </svg>
-                        {{ app()->getLocale() == 'ar' ? 'English' : 'العربية' }}
-                    </a>
-                    --}}
-                    <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green' }}">{{ __('Home') }}</a>
-                    @auth
-                        <a href="{{ route('favorites.index') }}" class="{{ request()->routeIs('favorites.index') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green' }}">{{ __('Favorites') }}</a>
-                        @if(Auth::user()->hasRole('owner'))
-                            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green' }}">{{ __('Dashboard') }}</a>
-                        @endif
-                    @endauth
-                    <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green' }}">{{ __('About') }}</a>
-                    <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green' }}">{{ __('Contact') }}</a>
+                    
+                    <a href="<?php echo e(url('/')); ?>" class="<?php echo e(request()->is('/') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green'); ?>"><?php echo e(__('Home')); ?></a>
+                    <?php if(auth()->guard()->check()): ?>
+                        <a href="<?php echo e(route('favorites.index')); ?>" class="<?php echo e(request()->routeIs('favorites.index') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green'); ?>"><?php echo e(__('Favorites')); ?></a>
+                        <?php if(Auth::user()->hasRole('owner')): ?>
+                            <a href="<?php echo e(route('dashboard')); ?>" class="<?php echo e(request()->routeIs('dashboard') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green'); ?>"><?php echo e(__('Dashboard')); ?></a>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    <a href="<?php echo e(route('about')); ?>" class="<?php echo e(request()->routeIs('about') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green'); ?>"><?php echo e(__('About')); ?></a>
+                    <a href="<?php echo e(route('contact')); ?>" class="<?php echo e(request()->routeIs('contact') ? 'text-brand-green font-bold text-base lg:text-lg' : 'text-gray-500 text-sm font-medium hover:text-brand-green'); ?>"><?php echo e(__('Contact')); ?></a>
                 </nav>
 
                 <!-- Desktop User Actions (Left in RTL) -->
                 <div class="hidden md:flex items-center justify-end gap-3 lg:gap-4 flex-1">
-                    @auth
+                    <?php if(auth()->guard()->check()): ?>
                         <div class="flex items-center gap-2 lg:gap-3">
-                            <span class="bg-brand-green text-white font-bold px-3 py-2 rounded-lg shadow-sm text-sm">{{ Auth::user()->name }}</span>
-                            <form method="POST" action="{{ route('logout') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="text-sm text-red-600 hover:text-white font-bold bg-red-50 hover:bg-red-500 px-3 py-2 rounded-lg border border-red-200 hover:border-red-500 transition-all shadow-sm">{{ __('Logout') }}</button>
+                            <span class="bg-brand-green text-white font-bold px-3 py-2 rounded-lg shadow-sm text-sm"><?php echo e(Auth::user()->name); ?></span>
+                            <form method="POST" action="<?php echo e(route('logout')); ?>" class="inline">
+                                <?php echo csrf_field(); ?>
+                                <button type="submit" class="text-sm text-red-600 hover:text-white font-bold bg-red-50 hover:bg-red-500 px-3 py-2 rounded-lg border border-red-200 hover:border-red-500 transition-all shadow-sm"><?php echo e(__('Logout')); ?></button>
                             </form>
                         </div>
-                    @else
-                        <a href="{{ route('select-role') }}" class="text-sm font-medium text-brand-green hover:opacity-80">{{ __('Login') }}</a>
-                        <a href="{{ route('select-role') }}?action=register" class="bg-brand-green text-white px-4 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm">{{ __('Register') }}</a>
-                    @endauth
+                    <?php else: ?>
+                        <a href="<?php echo e(route('select-role')); ?>" class="text-sm font-medium text-brand-green hover:opacity-80"><?php echo e(__('Login')); ?></a>
+                        <a href="<?php echo e(route('select-role')); ?>?action=register" class="bg-brand-green text-white px-4 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm"><?php echo e(__('Register')); ?></a>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Mobile Menu Button -->
@@ -88,67 +99,60 @@
              x-transition:leave-end="opacity-0 -translate-y-2"
              class="md:hidden bg-white border-t border-gray-100">
             <div class="px-4 py-3 space-y-2">
-                {{-- Mobile Language Switcher - Temporarily hidden
-                <a href="{{ route('lang.switch', app()->getLocale() == 'ar' ? 'en' : 'ar') }}" 
-                   class="flex items-center gap-2 py-2 px-3 rounded-lg border border-gray-200 mb-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
-                    </svg>
-                    {{ app()->getLocale() == 'ar' ? 'English' : 'العربية' }}
-                </a>
-                --}}
-                <a href="{{ url('/') }}" class="block py-2 px-3 rounded-lg {{ request()->is('/') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Home') }}</a>
-                @auth
-                    <a href="{{ route('favorites.index') }}" class="block py-2 px-3 rounded-lg {{ request()->routeIs('favorites.index') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Favorites') }}</a>
-                    @if(Auth::user()->hasRole('owner'))
-                        <a href="{{ route('dashboard') }}" class="block py-2 px-3 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Dashboard') }}</a>
-                    @endif
-                @endauth
-                <a href="{{ route('about') }}" class="block py-2 px-3 rounded-lg {{ request()->routeIs('about') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('About') }}</a>
-                <a href="{{ route('contact') }}" class="block py-2 px-3 rounded-lg {{ request()->routeIs('contact') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50' }}">{{ __('Contact') }}</a>
+                
+                <a href="<?php echo e(url('/')); ?>" class="block py-2 px-3 rounded-lg <?php echo e(request()->is('/') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50'); ?>"><?php echo e(__('Home')); ?></a>
+                <?php if(auth()->guard()->check()): ?>
+                    <a href="<?php echo e(route('favorites.index')); ?>" class="block py-2 px-3 rounded-lg <?php echo e(request()->routeIs('favorites.index') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50'); ?>"><?php echo e(__('Favorites')); ?></a>
+                    <?php if(Auth::user()->hasRole('owner')): ?>
+                        <a href="<?php echo e(route('dashboard')); ?>" class="block py-2 px-3 rounded-lg <?php echo e(request()->routeIs('dashboard') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50'); ?>"><?php echo e(__('Dashboard')); ?></a>
+                    <?php endif; ?>
+                <?php endif; ?>
+                <a href="<?php echo e(route('about')); ?>" class="block py-2 px-3 rounded-lg <?php echo e(request()->routeIs('about') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50'); ?>"><?php echo e(__('About')); ?></a>
+                <a href="<?php echo e(route('contact')); ?>" class="block py-2 px-3 rounded-lg <?php echo e(request()->routeIs('contact') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700 hover:bg-gray-50'); ?>"><?php echo e(__('Contact')); ?></a>
                 
                 <div class="border-t border-gray-100 pt-3 mt-3">
-                    @auth
+                    <?php if(auth()->guard()->check()): ?>
                         <div class="flex items-center justify-between px-3">
-                            <span class="font-bold text-gray-800">{{ Auth::user()->name }}</span>
-                            <form method="POST" action="{{ route('logout') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="text-sm text-red-600 font-bold">{{ __('Logout') }}</button>
+                            <span class="font-bold text-gray-800"><?php echo e(Auth::user()->name); ?></span>
+                            <form method="POST" action="<?php echo e(route('logout')); ?>" class="inline">
+                                <?php echo csrf_field(); ?>
+                                <button type="submit" class="text-sm text-red-600 font-bold"><?php echo e(__('Logout')); ?></button>
                             </form>
                         </div>
-                    @else
+                    <?php else: ?>
                         <div class="flex gap-2">
-                            <a href="{{ route('select-role') }}" class="flex-1 py-2 px-3 rounded-lg border border-gray-300 text-center text-gray-700 font-medium">{{ __('Login') }}</a>
-                            <a href="{{ route('select-role') }}?action=register" class="flex-1 py-2 px-3 rounded-lg bg-brand-green text-center text-white font-bold">{{ __('Register') }}</a>
+                            <a href="<?php echo e(route('select-role')); ?>" class="flex-1 py-2 px-3 rounded-lg border border-gray-300 text-center text-gray-700 font-medium"><?php echo e(__('Login')); ?></a>
+                            <a href="<?php echo e(route('select-role')); ?>?action=register" class="flex-1 py-2 px-3 rounded-lg bg-brand-green text-center text-white font-bold"><?php echo e(__('Register')); ?></a>
                         </div>
-                    @endauth
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </header>
 
     <main>
-        {{ $slot ?? '' }}
-        @yield('content')
+        <?php echo e($slot ?? ''); ?>
+
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
 
     <footer class="bg-brand-green text-white py-8 md:py-12 mt-8 md:mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 text-center md:text-right">
                 <div class="sm:col-span-2 md:col-span-1">
-                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4">{{ __('Wen Sar') }}</h3>
-                    <p class="text-gray-300 text-sm md:text-base">{{ __('Your comprehensive guide in Damascus and Syria. We help you reach the best services and businesses.') }}</p>
+                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4"><?php echo e(__('Wen Sar')); ?></h3>
+                    <p class="text-gray-300 text-sm md:text-base"><?php echo e(__('Your comprehensive guide in Damascus and Syria. We help you reach the best services and businesses.')); ?></p>
                 </div>
                 <div>
-                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4">{{ __('Quick Links') }}</h3>
+                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4"><?php echo e(__('Quick Links')); ?></h3>
                     <ul class="space-y-2 text-sm md:text-base">
-                        <li><a href="{{ route('contact') }}#faq" class="text-gray-300 hover:text-white transition">الأسئلة الشائعة</a></li>
+                        <li><a href="<?php echo e(route('contact')); ?>#faq" class="text-gray-300 hover:text-white transition">الأسئلة الشائعة</a></li>
                         <li><button @click="privacyOpen = true" class="text-gray-300 hover:text-white transition">سياسة الخصوصية</button></li>
                         <li><button @click="termsOpen = true" class="text-gray-300 hover:text-white transition">شروط الاستخدام</button></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4">{{ __('Follow Us') }}</h3>
+                    <h3 class="text-lg md:text-xl font-bold mb-3 md:mb-4"><?php echo e(__('Follow Us')); ?></h3>
                     <div class="flex justify-center md:justify-start gap-4 text-sm md:text-base">
                         <button @click="fbToast = true; setTimeout(() => fbToast = false, 3000)" class="text-gray-300 hover:text-white transition">Facebook</button>
                         <a href="https://www.instagram.com/wen_sar_sy?igsh=N2Zsa2hlZW03M2Vm&utm_source=qr" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition">Instagram</a>
@@ -156,7 +160,8 @@
                 </div>
             </div>
             <div class="border-t border-white/10 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-gray-400 text-sm">
-                &copy; {{ date('Y') }} {{ __('Wen Sar') }}. {{ __('All rights reserved.') }}
+                &copy; <?php echo e(date('Y')); ?> <?php echo e(__('Wen Sar')); ?>. <?php echo e(__('All rights reserved.')); ?>
+
             </div>
         </div>
     </footer>
@@ -259,7 +264,7 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" @click.stop="acknowledgePrivacy()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-green text-base font-medium text-white hover:opacity-90 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" @click.stop="privacyOpen = false" onclick="document.body.__x.$data.privacyOpen = false" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-brand-green text-base font-medium text-white hover:opacity-90 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
                         فهمت
                     </button>
                 </div>
@@ -268,32 +273,4 @@
     </div>
 </body>
 </html>
-
-<script>
-    // Alpine layout state factory
-    function layout() {
-        // Check if user already acknowledged privacy in this session
-        const privacyAcknowledged = sessionStorage.getItem('privacyAcknowledged') === 'true';
-
-        return {
-            mobileMenuOpen: false,
-            termsOpen: false,
-            privacyOpen: false,
-            fbToast: false,
-            // On component init, don't auto-open privacy if acknowledged
-            init() {
-                if (!privacyAcknowledged) {
-                    // do nothing: keep privacyOpen false so it won't auto-open
-                }
-            },
-            acknowledgePrivacy() {
-                this.privacyOpen = false;
-                try {
-                    sessionStorage.setItem('privacyAcknowledged', 'true');
-                } catch (e) {
-                    // ignore storage errors
-                }
-            }
-        }
-    }
-</script>
+<?php /**PATH C:\Users\LENOVO\Desktop\Wen-Sar\resources\views/layouts/app.blade.php ENDPATH**/ ?>
