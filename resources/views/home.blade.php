@@ -107,38 +107,7 @@
                 </button>
             </form>
 
-            <!-- Coming Soon Message -->
-            <div x-show="false"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform scale-95"
-                 x-transition:enter-end="opacity-100 transform scale-100"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100 transform scale-100"
-                 x-transition:leave-end="opacity-0 transform scale-95"
-                 class="sm:col-span-2 lg:col-span-4 mt-4">
-                <div class="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-4 md:p-6 text-center shadow-lg">
-                    <div class="flex items-center justify-center gap-3 mb-3">
-                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                            <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <span class="text-2xl">📍</span>
-                    </div>
-                    <h3 class="text-lg md:text-xl font-bold text-orange-700 mb-2">
-                        {{ __('Coming Soon') }}
-                    </h3>
-                    <p class="text-orange-600 text-base md:text-lg font-medium">
-                        المحافظة <span x-text="selectedGovernorateName" class="font-bold text-orange-800"></span> ستتواجد قريباً
-                    </p>
-                    <p class="text-orange-500 text-sm mt-2">
-                        {{ __('Currently available only in Damascus and Rural Damascus') }}
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+            
 
 <!-- Ads Carousel -->
 <div class="max-w-7xl mx-auto px-4 pt-8 md:pt-12 sm:px-6 lg:px-8">
