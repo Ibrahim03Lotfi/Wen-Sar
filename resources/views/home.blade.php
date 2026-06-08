@@ -29,7 +29,7 @@
                     const selectedGov = this.governorates.find(g => g.id == this.governorateId);
                     return selectedGov ? selectedGov.name : '';
                 },
-                async updateDistricts() {
+                async updateDistricts() 
                     if(!this.governorateId) {
                         this.districts = [];
                         return;
@@ -108,7 +108,7 @@
             </form>
 
             <!-- Coming Soon Message -->
-            <div x-show="governorateId && !isAvailableGovernorate" 
+            <div x-show="false"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="opacity-0 transform scale-95"
                  x-transition:enter-end="opacity-100 transform scale-100"
