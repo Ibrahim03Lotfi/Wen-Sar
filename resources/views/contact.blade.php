@@ -50,7 +50,7 @@
                     </div>
                     <h3 class="font-bold text-gray-900 mb-2">البريد الإلكتروني</h3>
                     <p class="text-gray-500 text-sm">نرد على جميع الرسائل خلال 24 ساعة</p>
-                    <a href="mailto:info@wensar.sy" class="text-brand-green font-bold mt-2 inline-block hover:underline">info@wensar.sy</a>
+                    <a href="mailto:info@wensar.sy" class="text-brand-green font-bold mt-2 inline-block hover:underline">Wensar2026@gmail.com</a>
                 </div>
 
                 <!-- Phone Card -->
@@ -62,7 +62,10 @@
                     </div>
                     <h3 class="font-bold text-gray-900 mb-2">الهاتف</h3>
                     <p class="text-gray-500 text-sm">متاح للاتصال من الأحد إلى الخميس</p>
-                    <span class="text-brand-green font-bold mt-2 inline-block" dir="ltr">+963 11 123 4567</span>
+                    <span class="text-brand-green font-bold mt-2 inline-block" dir="ltr">+963 982 616 161</span> </br>
+<span class="text-brand-green font-bold mt-2 inline-block" dir="ltr">+963 932 534 193</span></br>
+<span class="text-brand-green font-bold mt-2 inline-block" dir="ltr">+963 991 075 584</span>
+
                 </div>
 
                 <!-- Location Card -->
@@ -74,7 +77,6 @@
                     </div>
                     <h3 class="font-bold text-gray-900 mb-2">الموقع</h3>
                     <p class="text-gray-500 text-sm">دمشق، سوريا</p>
-                    <span class="text-gray-600 font-medium mt-2 inline-block">المزة - شارع العروبة</span>
                 </div>
             </div>
 

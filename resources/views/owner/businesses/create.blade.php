@@ -414,24 +414,58 @@
             if (input) input.value = '';
         };
 
-        // Images preview
+        // Images preview (track selected files and update input.files)
         const imagesInput = document.getElementById('imagesInput');
+        let selectedImages = [];
+
+        function updateImagesInputFiles() {
+            try {
+                const dt = new DataTransfer();
+                selectedImages.forEach(f => dt.items.add(f));
+                imagesInput.files = dt.files;
+            } catch (err) {
+                // DataTransfer might not be available in very old browsers; fallback does nothing
+                console.debug('DataTransfer not available', err);
+            }
+        }
+
+        function renderImagePreviews() {
+            const container = document.getElementById('imagePreviews');
+            if (!container) return;
+            container.innerHTML = '';
+            selectedImages.forEach((file, idx) => {
+                const div = document.createElement('div');
+                div.className = 'relative group';
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition';
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm';
+                btn.textContent = '×';
+                btn.addEventListener('click', function() { removeSelectedImage(idx); });
+                div.appendChild(img);
+                div.appendChild(btn);
+                container.appendChild(div);
+            });
+        }
+
+        function removeSelectedImage(index) {
+            if (index < 0 || index >= selectedImages.length) return;
+            selectedImages.splice(index, 1);
+            updateImagesInputFiles();
+            renderImagePreviews();
+        }
+
         if (imagesInput) {
             imagesInput.addEventListener('change', function(e) {
-                const files = e.target.files;
-                const container = document.getElementById('imagePreviews');
-                if (container) {
-                    container.innerHTML = '';
-                    for (let file of files) {
-                        const div = document.createElement('div');
-                        div.className = 'relative group';
-                        div.innerHTML = `
-                            <img src="${URL.createObjectURL(file)}" class="w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition">
-                            <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm">×</button>
-                        `;
-                        container.appendChild(div);
-                    }
-                }
+                const files = Array.from(e.target.files || []);
+                // append new selections
+                selectedImages = selectedImages.concat(files);
+                // enforce max 16 files if needed
+                if (selectedImages.length > 16) selectedImages = selectedImages.slice(0, 16);
+                updateImagesInputFiles();
+                renderImagePreviews();
             });
         }
 

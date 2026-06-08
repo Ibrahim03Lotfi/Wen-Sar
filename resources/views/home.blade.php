@@ -99,8 +99,9 @@
                 <div class="ads-slide shrink-0 p-2 md:p-3" style="width: 100%;" data-index="{{ $index }}">
                     <div class="relative rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-white" style="height: clamp(11rem, 36vw, 20rem); min-height: 11rem;">
                         @if($ad)
-                            <div class="ad-image-fallback h-full w-full bg-gradient-to-r from-brand-green via-emerald-700 to-brand-green flex items-center justify-center px-6 text-center">
-                                <p class="text-white text-lg md:text-3xl font-extrabold tracking-wide">?????? ?? ??? ?????? ?? ??? ???!</p>
+                            <div class="ad-image-fallback h-full w-full bg-gradient-to-r from-brand-green via-emerald-700 to-brand-green flex flex-col items-center justify-center px-6 text-center">
+                                <p class="text-white text-lg md:text-3xl font-extrabold tracking-wide">استفيد من نشر اعلانك مع وين صار</p>
+                                <p class="text-sm md:text-base text-white/90 mt-2">0982616161 , 0932534193 , 0991075584</p>
                             </div>
                             <img
                                 src="{{ asset('storage/' . $ad->image_path) }}"
@@ -111,8 +112,9 @@
                             >
                             <div class="absolute inset-0 z-20 pointer-events-none bg-gradient-to-r from-black/20 via-transparent to-black/10"></div>
                         @else
-                            <div class="h-full w-full bg-gradient-to-r from-brand-green via-emerald-700 to-brand-green flex items-center justify-center px-6 text-center">
-                                <p class="text-white text-lg md:text-3xl font-extrabold tracking-wide">?????? ?? ??? ?????? ?? ??? ???!</p>
+                            <div class="h-full w-full bg-gradient-to-r from-brand-green via-emerald-700 to-brand-green flex flex-col items-center justify-center px-6 text-center">
+                                <p class="text-white text-lg md:text-3xl font-extrabold tracking-wide">استفيد من نشر اعلانك مع وين صار</p>
+                                <p class="text-sm md:text-base text-white/90 mt-2">0982616161 , 0932534193 , 0991075584</p>
                             </div>
                         @endif
                     </div>
