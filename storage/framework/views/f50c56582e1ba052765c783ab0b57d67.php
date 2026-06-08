@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="<?php echo e(app()->getLocale()); ?>" dir="<?php echo e(app()->getLocale() == 'ar' ? 'rtl' : 'ltr'); ?>">
 <head>
+    <style>[x-cloak] { display: none !important; }</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -9,9 +10,7 @@
     <!-- Scripts & Styles -->
     <?php echo app('Illuminate\Foundation\Vite')(['resources/js/app.js', 'resources/css/app.css']); ?>
     
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
+    
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased font-sans" x-data="layout()">
     <!-- Splash Screen -->
@@ -275,31 +274,23 @@
 </html>
 
 <script>
-    // Alpine layout state factory
-    function layout() {
-        // Check if user already acknowledged privacy in this session
-        const privacyAcknowledged = sessionStorage.getItem('privacyAcknowledged') === 'true';
-
-        return {
-            mobileMenuOpen: false,
-            termsOpen: false,
-            privacyOpen: false,
-            fbToast: false,
-            // On component init, don't auto-open privacy if acknowledged
-            init() {
-                if (!privacyAcknowledged) {
-                    // do nothing: keep privacyOpen false so it won't auto-open
-                }
-            },
-            acknowledgePrivacy() {
-                this.privacyOpen = false;
-                try {
-                    sessionStorage.setItem('privacyAcknowledged', 'true');
-                } catch (e) {
-                    // ignore storage errors
-                }
-            }
+   function layout() {
+    return {
+        mobileMenuOpen: false,
+        termsOpen: false,
+        privacyOpen: false,
+        fbToast: false,
+        init() {
+            // Force close all modals on init
+            this.privacyOpen = false;
+            this.termsOpen = false;
+            this.mobileMenuOpen = false;
+            this.fbToast = false;
+        },
+        acknowledgePrivacy() {
+            this.privacyOpen = false;
         }
     }
+}
 </script>
 <?php /**PATH C:\Users\LENOVO\Desktop\Wen-Sar\resources\views/layouts/app.blade.php ENDPATH**/ ?>

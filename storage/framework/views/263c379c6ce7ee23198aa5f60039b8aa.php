@@ -211,10 +211,24 @@
         setTimeout(() => {
             splash.classList.add('fade-out');
             document.body.classList.remove('splash-active');
-            
+            // Ensure privacy modal is closed (if Alpine is initialized)
+            try {
+                if (document.body.__x && document.body.__x.$data) {
+                    document.body.__x.$data.privacyOpen = false;
+                }
+            } catch (e) {
+                // ignore
+            }
+
             // Remove from DOM after fade out
             setTimeout(() => {
                 splash.style.display = 'none';
+                // extra safety: close privacy again after DOM updates
+                try {
+                    if (document.body.__x && document.body.__x.$data) {
+                        document.body.__x.$data.privacyOpen = false;
+                    }
+                } catch (e) {}
             }, 600);
         }, 5000);
     });

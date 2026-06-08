@@ -22,9 +22,9 @@
                     return this.governorateId && this.districtId && this.categoryId && this.isAvailableGovernorate;
                 },
                 get isAvailableGovernorate() {
-                    const selectedGov = this.governorates.find(g => g.id == this.governorateId);
-                    return selectedGov && (selectedGov.name === 'دمشق' || selectedGov.name === 'ريف دمشق');
-                },
+    const selectedGov = this.governorates.find(g => g.id == this.governorateId);
+    return selectedGov !== undefined;
+},
                 get selectedGovernorateName() {
                     const selectedGov = this.governorates.find(g => g.id == this.governorateId);
                     return selectedGov ? selectedGov.name : '';
