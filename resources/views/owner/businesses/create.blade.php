@@ -467,6 +467,38 @@
                 updateImagesInputFiles();
                 renderImagePreviews();
             });
+
+            // Intercept form submit to ensure only selectedImages are sent
+            const form = imagesInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', async function(evt) {
+                    evt.preventDefault();
+                    // ensure at least one image for create
+                    if (selectedImages.length === 0) {
+                        alert('مطلوب صورة واحدة على الأقل');
+                        return;
+                    }
+                    const fd = new FormData(form);
+                    // remove any existing images fields
+                    fd.delete('images');
+                    fd.delete('images[]');
+                    // append selected images
+                    selectedImages.forEach(f => fd.append('images[]', f));
+
+                    try {
+                        const resp = await fetch(form.action, { method: form.method || 'POST', body: fd, credentials: 'same-origin' });
+                        if (resp.redirected) {
+                            window.location = resp.url;
+                            return;
+                        }
+                        const html = await resp.text();
+                        document.open(); document.write(html); document.close();
+                    } catch (err) {
+                        console.error(err);
+                        alert('حدث خطأ أثناء الإرسال. حاول مرة أخرى.');
+                    }
+                });
+            }
         }
 
         // Phone preview update

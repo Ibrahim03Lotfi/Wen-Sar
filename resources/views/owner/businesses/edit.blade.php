@@ -502,6 +502,33 @@
                 updateImagesInputFiles();
                 renderImagePreviews();
             });
+
+            // Intercept form submit to ensure only selectedImages are sent as files
+            const form = imagesInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', async function(evt) {
+                    evt.preventDefault();
+                    const fd = new FormData(form);
+                    // remove any file fields
+                    fd.delete('images');
+                    fd.delete('images[]');
+                    // append selectedImages
+                    selectedImages.forEach(f => fd.append('images[]', f));
+
+                    try {
+                        const resp = await fetch(form.action, { method: form.method || 'POST', body: fd, credentials: 'same-origin' });
+                        if (resp.redirected) {
+                            window.location = resp.url;
+                            return;
+                        }
+                        const html = await resp.text();
+                        document.open(); document.write(html); document.close();
+                    } catch (err) {
+                        console.error(err);
+                        alert('حدث خطأ أثناء الإرسال. حاول مرة أخرى.');
+                    }
+                });
+            }
         }
 
         window.deleteExistingImage = function(button) {
