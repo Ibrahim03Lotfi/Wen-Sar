@@ -335,6 +335,7 @@
                     </h2>
                 </div>
                 <div class="p-6 space-y-6">
+
                     <!-- Logo -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">صورة شعار المنشأة <span class="text-red-500">*</span></label>
@@ -345,17 +346,32 @@
                         </div>
                     </div>
 
-                    <!-- Additional Images -->
+                    <!-- Additional Images — FIXED -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">صور إضافية للمنشأة <span class="text-red-500">*</span></label>
-                        <input type="file" name="images[]" accept="image/*" multiple id="imagesInput" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-                        <p class="text-xs text-gray-400 mt-2">مطلوب صورة واحدة على الأقل - الحد الأقصى 16 صور، كل صورة بحد أقصى 2 ميغابايت</p>
+
+                        {{-- Hidden container — JS writes the real <input type="file"> here --}}
+                        <div id="images-file-container"></div>
+
+                        {{-- Picker trigger --}}
+                        <label for="images-picker" class="cursor-pointer inline-flex items-center gap-2 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 border border-gray-300 rounded-lg py-2 px-4 hover:bg-gray-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            اختر الصور
+                        </label>
+                        <input type="file" id="images-picker" accept="image/*" multiple class="hidden">
+
+                        <p class="text-xs text-gray-400 mt-2">مطلوب صورة واحدة على الأقل - الحد الأقصى 16 صورة، كل صورة بحد أقصى 2 ميغابايت</p>
+
+                        {{-- Preview grid --}}
                         <div id="imagePreviews" class="mt-4 grid grid-cols-4 gap-3"></div>
                     </div>
+
                 </div>
             </div>
 
-            <!-- Section 5: Social Media -->
+            <!-- Section 6: Social Media -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <h2 class="font-bold text-gray-800 flex items-center gap-2">
@@ -390,126 +406,98 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Logo preview
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ── Logo (unchanged logic) ──────────────────────────────────────────
         const logoInput = document.getElementById('logoInput');
         if (logoInput) {
-            logoInput.addEventListener('change', function(e) {
+            logoInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const preview = document.getElementById('logoPreview');
                     if (preview) {
-                        const img = preview.querySelector('img');
-                        if (img) img.src = URL.createObjectURL(file);
+                        preview.querySelector('img').src = URL.createObjectURL(file);
                         preview.classList.remove('hidden');
                     }
                 }
             });
         }
 
-        window.removeLogo = function() {
+        window.removeLogo = function () {
             const preview = document.getElementById('logoPreview');
-            const input = document.getElementById('logoInput');
+            const input   = document.getElementById('logoInput');
             if (preview) preview.classList.add('hidden');
-            if (input) input.value = '';
+            if (input)   input.value = '';
         };
 
-        // Images preview (track selected files and update input.files)
-        const imagesInput = document.getElementById('imagesInput');
-        let selectedImages = [];
+        // ── Additional Images — FIXED ───────────────────────────────────────
+        // We keep our own array of File objects.
+        // The real <input name="images[]"> is rebuilt from this array every
+        // time an image is added or removed — so the server only ever receives
+        // exactly the files the user kept.
 
-        function updateImagesInputFiles() {
-            try {
-                const dt = new DataTransfer();
-                selectedImages.forEach(f => dt.items.add(f));
-                imagesInput.files = dt.files;
-            } catch (err) {
-                // DataTransfer might not be available in very old browsers; fallback does nothing
-                console.debug('DataTransfer not available', err);
-            }
+        let selectedFiles = [];   // File objects the user currently wants to keep
+        let nextId = 0;           // unique DOM key per preview card
+
+        const picker    = document.getElementById('images-picker');
+        const container = document.getElementById('images-file-container');
+        const previews  = document.getElementById('imagePreviews');
+
+        picker.addEventListener('change', function (e) {
+            Array.from(e.target.files).forEach(file => {
+                const id = nextId++;
+                selectedFiles.push({ id, file });
+                addPreviewCard(id, file);
+            });
+            syncFileInput();
+            e.target.value = ''; // reset so same file can be re-added
+        });
+
+        function addPreviewCard(id, file) {
+            const div = document.createElement('div');
+            div.className   = 'relative group';
+            div.dataset.imgId = id;
+
+            const img = document.createElement('img');
+            img.src       = URL.createObjectURL(file);
+            img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition';
+
+            const btn = document.createElement('button');
+            btn.type      = 'button';
+            btn.className = 'absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm';
+            btn.textContent = '×';
+            btn.addEventListener('click', function () {
+                // Remove from our array
+                selectedFiles = selectedFiles.filter(f => f.id !== id);
+                // Remove preview card
+                div.remove();
+                // Rebuild the real file input
+                syncFileInput();
+            });
+
+            div.appendChild(img);
+            div.appendChild(btn);
+            previews.appendChild(div);
         }
 
-        function renderImagePreviews() {
-            const container = document.getElementById('imagePreviews');
-            if (!container) return;
+        function syncFileInput() {
+            // Replace whatever is in the container with a fresh input
             container.innerHTML = '';
-            selectedImages.forEach((file, idx) => {
-                const div = document.createElement('div');
-                div.className = 'relative group';
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition';
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm';
-                btn.textContent = '×';
-                btn.addEventListener('click', function() { removeSelectedImage(idx); });
-                div.appendChild(img);
-                div.appendChild(btn);
-                container.appendChild(div);
-            });
+
+            if (selectedFiles.length === 0) return;
+
+            const dt = new DataTransfer();
+            selectedFiles.forEach(item => dt.items.add(item.file));
+
+            const input    = document.createElement('input');
+            input.type     = 'file';
+            input.name     = 'images[]';
+            input.multiple = true;
+            input.style.display = 'none';
+            input.files    = dt.files;   // assign the pruned FileList
+            container.appendChild(input);
         }
 
-        function removeSelectedImage(index) {
-            if (index < 0 || index >= selectedImages.length) return;
-            selectedImages.splice(index, 1);
-            updateImagesInputFiles();
-            renderImagePreviews();
-        }
-
-        if (imagesInput) {
-            imagesInput.addEventListener('change', function(e) {
-                const files = Array.from(e.target.files || []);
-                // append new selections
-                selectedImages = selectedImages.concat(files);
-                // enforce max 16 files if needed
-                if (selectedImages.length > 16) selectedImages = selectedImages.slice(0, 16);
-                updateImagesInputFiles();
-                renderImagePreviews();
-            });
-
-            // Intercept form submit to ensure only selectedImages are sent
-            const form = imagesInput.closest('form');
-            if (form) {
-                form.addEventListener('submit', async function(evt) {
-                    evt.preventDefault();
-                    // ensure at least one image for create
-                    if (selectedImages.length === 0) {
-                        alert('مطلوب صورة واحدة على الأقل');
-                        return;
-                    }
-                    const fd = new FormData(form);
-                    // remove any existing images fields
-                    fd.delete('images');
-                    fd.delete('images[]');
-                    // append selected images
-                    selectedImages.forEach(f => fd.append('images[]', f));
-
-                    try {
-                        const resp = await fetch(form.action, { method: form.method || 'POST', body: fd, credentials: 'same-origin' });
-                        if (resp.redirected) {
-                            window.location = resp.url;
-                            return;
-                        }
-                        const html = await resp.text();
-                        document.open(); document.write(html); document.close();
-                    } catch (err) {
-                        console.error(err);
-                        alert('حدث خطأ أثناء الإرسال. حاول مرة أخرى.');
-                    }
-                });
-            }
-        }
-
-        // Phone preview update
-        const phoneInput = document.getElementById('phoneInput');
-        if (phoneInput) {
-            phoneInput.addEventListener('input', function(e) {
-                const val = e.target.value;
-                const preview = document.getElementById('phonePreview');
-                if (preview) preview.textContent = val;
-            });
-        }
     });
 </script>
 @endsection

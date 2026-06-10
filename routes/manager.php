@@ -80,5 +80,10 @@ Route::prefix('manager')->name('manager.')->group(function () {
         Route::get('/managers/create', [ManagerController::class, 'create'])->name('managers.create');
         Route::post('/managers', [ManagerController::class, 'store'])->middleware('throttle:manager')->name('managers.store');
         Route::delete('/managers/{manager}', [ManagerController::class, 'destroy'])->name('managers.destroy');
+
+        // Special Places:
+        Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])->name('manager.businesses.toggleFeatured');
+        Route::post('/businesses/{business}/set-featured-rank', [BusinessController::class, 'setFeaturedRank'])->name('manager.businesses.setFeaturedRank');
+
     });
 });

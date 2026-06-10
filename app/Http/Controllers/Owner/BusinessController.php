@@ -56,9 +56,9 @@ class BusinessController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
-                'logo' => 'required|image|max:2048',
+                'logo' => 'required|image',
                 'images' => 'required|array|min:1|max:16',
-                'images.*' => 'required|image|max:2048',
+                'images.*' => 'required|image',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
@@ -99,7 +99,7 @@ class BusinessController extends Controller
             $validated['landlines'] = !empty($landlines) ? array_values(array_unique($landlines)) : null;
             $validated['landline'] = $landlines[0] ?? null;
 
-            // Handle logo upload
+            // Handle logo upload with compression
             $logoFile = $request->file('logo');
             if (app()->environment('local')) {
                 \Log::info('Logo upload attempt', [
@@ -109,14 +109,14 @@ class BusinessController extends Controller
                 ]);
             }
 
-            $logoPath = $logoFile->store('logos', 'public');
+            $logoPath = $this->compressImage($logoFile, 'logos');
             $validated['logo'] = $logoPath;
 
             if (app()->environment('local')) {
                 \Log::info('Logo stored', ['stored_path' => $logoPath]);
             }
 
-            // Handle images upload
+            // Handle images upload with compression
             $imagePaths = [];
             foreach ($request->file('images') as $index => $image) {
                 if (app()->environment('local')) {
@@ -127,7 +127,7 @@ class BusinessController extends Controller
                     ]);
                 }
 
-                $path = $image->store('business_images', 'public');
+                $path = $this->compressImage($image, 'business_images');
                 $imagePaths[] = $path;
 
                 if (app()->environment('local')) {
@@ -230,9 +230,9 @@ class BusinessController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'address' => 'required|string|max:500',
                 'google_maps_link' => 'nullable|url|max:500',
-                'logo' => 'nullable|image|max:2048',
+                'logo' => 'nullable|image',
                 'images' => 'nullable|array|max:16',
-                'images.*' => 'nullable|image|max:2048',
+                'images.*' => 'nullable|image',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
@@ -241,9 +241,9 @@ class BusinessController extends Controller
                 \Log::info('Validation passed', ['validated' => $validated]);
             }
 
-            // Handle logo upload
+            // Handle logo upload with compression
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('logos', 'public');
+                $logoPath = $this->compressImage($request->file('logo'), 'logos');
                 $validated['logo'] = $logoPath;
             } else {
                 // Keep existing logo if not uploaded
@@ -284,12 +284,12 @@ class BusinessController extends Controller
                 unset($validated['sub_area_id']);
             }
 
-            // Handle images upload
+            // Handle images upload with compression
             $currentImages = $business->images ?? [];
             if ($request->hasFile('images')) {
                 $imagePaths = [];
                 foreach ($request->file('images') as $image) {
-                    $path = $image->store('business_images', 'public');
+                    $path = $this->compressImage($image, 'business_images');
                     $imagePaths[] = $path;
                 }
                 $currentImages = array_merge($currentImages, $imagePaths);
@@ -360,5 +360,80 @@ class BusinessController extends Controller
         if ($business->owner_id !== Auth::id() && !$user->hasRole('admin')) {
             abort(403);
         }
+    }
+
+    /**
+     * Compress and save an uploaded image using GD.
+     * - Resizes to max 1920px on the longest side (preserves aspect ratio)
+     * - Saves as JPEG at quality 75
+     * - Returns the storage-relative path (e.g. "logos/abc123.jpg")
+     */
+    private function compressImage(\Illuminate\Http\UploadedFile $file, string $directory): string
+    {
+        $filename = $directory . '/' . uniqid() . '_' . time() . '.jpg';
+        $fullPath = Storage::disk('public')->path($filename);
+
+        $mime = $file->getMimeType();
+        $sourcePath = $file->getRealPath();
+
+        // Create GD image resource from uploaded file
+        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+            $source = imagecreatefromjpeg($sourcePath);
+        } elseif ($mime === 'image/png') {
+            $source = imagecreatefrompng($sourcePath);
+        } elseif ($mime === 'image/webp') {
+            $source = imagecreatefromwebp($sourcePath);
+        } elseif ($mime === 'image/gif') {
+            $source = imagecreatefromgif($sourcePath);
+        } else {
+            // Fallback: try jpeg
+            $source = @imagecreatefromjpeg($sourcePath);
+            if (!$source) {
+                // If GD can't handle it, store as-is
+                $file->storeAs($directory, basename($filename), 'public');
+                return $filename;
+            }
+        }
+
+        if (!$source) {
+            // GD failed, store original
+            $file->storeAs($directory, basename($filename), 'public');
+            return $filename;
+        }
+
+        $origWidth  = imagesx($source);
+        $origHeight = imagesy($source);
+        $maxDimension = 1920;
+
+        // Calculate new dimensions keeping aspect ratio
+        if ($origWidth > $maxDimension || $origHeight > $maxDimension) {
+            if ($origWidth >= $origHeight) {
+                $newWidth  = $maxDimension;
+                $newHeight = (int) round($origHeight * ($maxDimension / $origWidth));
+            } else {
+                $newHeight = $maxDimension;
+                $newWidth  = (int) round($origWidth * ($maxDimension / $origHeight));
+            }
+        } else {
+            $newWidth  = $origWidth;
+            $newHeight = $origHeight;
+        }
+
+        // Create resized canvas
+        $canvas = imagecreatetruecolor($newWidth, $newHeight);
+
+        // Preserve transparency for PNG/GIF before converting to JPEG
+        $white = imagecolorallocate($canvas, 255, 255, 255);
+        imagefill($canvas, 0, 0, $white);
+
+        imagecopyresampled($canvas, $source, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+        // Save as JPEG at quality 75
+        imagejpeg($canvas, $fullPath, 75);
+
+        imagedestroy($source);
+        imagedestroy($canvas);
+
+        return $filename;
     }
 }

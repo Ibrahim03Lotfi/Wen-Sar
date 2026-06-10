@@ -11,15 +11,15 @@
 
     <div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         @if($errors->any())
-            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4" id="errorSummary">
                 <div class="flex">
                     <div class="flex-shrink-0">
                         <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                         </svg>
                     </div>
-                    <div class="mr-3">
-                        <h3 class="text-sm font-medium text-red-800">حدث خطأ في الحفظ</h3>
+                    <div class="mr-3 w-full">
+                        <h3 class="text-sm font-medium text-red-800">يرجى تصحيح الحقول التالية:</h3>
                         <div class="mt-2 text-sm text-red-700">
                             <ul class="list-disc pl-5 space-y-1">
                                 @foreach($errors->all() as $error)
@@ -42,15 +42,13 @@
                     </div>
                     <div class="mr-3">
                         <h3 class="text-sm font-medium text-red-800">حدث خطأ</h3>
-                        <div class="mt-2 text-sm text-red-700">
-                            {{ session('error') }}
-                        </div>
+                        <div class="mt-2 text-sm text-red-700">{{ session('error') }}</div>
                     </div>
                 </div>
             </div>
         @endif
 
-        <form action="{{ route('owner.businesses.update', $business->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route('owner.businesses.update', $business->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6" id="editForm">
             @csrf
             @method('PUT')
 
@@ -68,65 +66,81 @@
                     <!-- Name -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">اسم المنشأة <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" value="{{ old('name', $business->name) }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">
+                        <input type="text" name="name" id="field_name" value="{{ old('name', $business->name) }}" required
+                               class="w-full rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 {{ $errors->has('name') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
+                        @error('name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
 
                     <!-- English Name -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">اسم المنشأة بالإنجليزي</label>
-                        <input type="text" name="english_name" dir="ltr" value="{{ old('english_name', $business->english_name) }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant, Luxury Salon...">
+                        <input type="text" name="english_name" dir="ltr" value="{{ old('english_name', $business->english_name) }}"
+                               class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="Example: Olive Restaurant, Luxury Salon...">
                     </div>
 
                     <!-- Description -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">الوصف <span class="text-red-500">*</span></label>
-                        <textarea name="description" rows="3" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800">{{ old('description', $business->description) }}</textarea>
+                        <textarea name="description" id="field_description" rows="3" required
+                                  class="w-full rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 {{ $errors->has('description') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">{{ old('description', $business->description) }}</textarea>
+                        @error('description')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
                 </div>
             </div>
 
             <!-- Section 2: Location -->
+            @php
+                $mainCategoryId = $business->category->parent_id ? $business->category->parent_id : $business->category_id;
+                $selectedCategoryId = old('category_id', $mainCategoryId);
+                $selectedSubcategoryId = old('subcategory_id', ($business->category->parent_id ? $business->category_id : ''));
+                $selectedGovernorateId = old('governorate_id', $business->district->governorate_id ?? '');
+                $selectedDistrictId = old('district_id', $business->district_id);
+                $selectedSubAreaId = old('sub_area_id', $business->sub_area_id ?? '');
+            @endphp
+
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-                 x-data="{ 
-                    governorateId: '{{ $business->district->governorate_id ?? '' }}',
-                    districtId: '{{ $business->district_id }}',
-                    subAreaId: '{{ $business->sub_area_id ?? '' }}',
+                 x-data="{
+                    governorateId: '{{ $selectedGovernorateId }}',
+                    districtId: '{{ $selectedDistrictId }}',
+                    subAreaId: '{{ $selectedSubAreaId }}',
                     subAreas: [],
                     districts: [],
-                    @php
-                        $mainCategoryId = $business->category->parent_id ? $business->category->parent_id : $business->category_id;
-                        $isSubcategory = $business->category->parent_id ? true : false;
-                    @endphp
-                    categoryId: '{{ $mainCategoryId }}',
+                    categoryId: '{{ $selectedCategoryId }}',
+                    subcategoryId: '{{ $selectedSubcategoryId }}',
                     subcategories: [],
                     allCategories: {{ json_encode($categories) }},
                     async init() {
-                        if(this.governorateId) await this.updateDistricts();
-                        if(this.districtId) await this.updateSubAreas();
-                        this.updateSubcategories();
+                        if (this.governorateId) await this.fetchDistricts();
+                        if (this.districtId) await this.fetchSubAreas();
+                        this.loadSubcategories();
                     },
-                    async updateDistricts() {
-                        if(!this.governorateId) {
-                            this.districts = [];
-                            return;
+                    async fetchDistricts() {
+                        if (!this.governorateId) { this.districts = []; this.districtId = ''; return; }
+                        const r = await fetch(`/api/governorates/${this.governorateId}/districts`);
+                        this.districts = await r.json();
+                    },
+                    async fetchSubAreas() {
+                        if (!this.districtId) { this.subAreas = []; this.subAreaId = ''; return; }
+                        const r = await fetch(`/api/districts/${this.districtId}/sub-areas`);
+                        this.subAreas = await r.json();
+                    },
+                    loadSubcategories() {
+                        const cat = this.allCategories.find(c => c.id == this.categoryId);
+                        this.subcategories = cat ? (cat.subcategories || []) : [];
+                        if (!this.subcategories.find(s => s.id == this.subcategoryId)) {
+                            this.subcategoryId = '';
                         }
-                        const response = await fetch(`/api/governorates/${this.governorateId}/districts`);
-                        this.districts = await response.json();
                     },
-                    async updateSubAreas() {
-                        if(!this.districtId) {
-                            this.subAreas = [];
-                            return;
-                        }
-                        const response = await fetch(`/api/districts/${this.districtId}/sub-areas`);
-                        this.subAreas = await response.json();
+                    onGovernorateChange() {
+                        this.districtId = '';
+                        this.subAreaId = '';
+                        this.fetchDistricts();
                     },
-                    updateSubcategories() {
-                        const category = this.allCategories.find(c => c.id == this.categoryId);
-                        this.subcategories = category ? category.subcategories : [];
+                    onDistrictChange() {
+                        this.subAreaId = '';
+                        this.fetchSubAreas();
                     }
-                 }"
-                 x-init="init(); $watch('governorateId', value => updateDistricts()); $watch('districtId', value => updateSubAreas()); $watch('categoryId', value => updateSubcategories())">
+                 }">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <h2 class="font-bold text-gray-800 flex items-center gap-2">
                         <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,38 +156,36 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">المحافظة <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="governorate_id" x-model="governorateId" required
-                                        class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="governorate_id" id="field_governorate_id" x-model="governorateId" @change="onGovernorateChange()" required
+                                        class="w-full rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer {{ $errors->has('governorate_id') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
                                     <option value="">اختر المحافظة...</option>
                                     @foreach($governorates as $governorate)
-                                        <option value="{{ $governorate->id }}" {{ ($business->district->governorate_id ?? '') == $governorate->id ? 'selected' : '' }}>{{ $governorate->name }}</option>
+                                        <option value="{{ $governorate->id }}">{{ $governorate->name }}</option>
                                     @endforeach
                                 </select>
                                 <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
                             </div>
+                            @error('governorate_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
 
                         <!-- District -->
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">المنطقة <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="district_id" x-model="districtId" required
-                                        class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="district_id" id="field_district_id" x-model="districtId" @change="onDistrictChange()" required
+                                        class="w-full rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer {{ $errors->has('district_id') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
                                     <option value="">اختر المنطقة...</option>
                                     <template x-for="district in districts" :key="district.id">
                                         <option :value="district.id" x-text="district.name" :selected="district.id == districtId"></option>
                                     </template>
                                 </select>
                                 <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
                             </div>
+                            @error('district_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
 
@@ -182,16 +194,15 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">الحي / المنطقة الفرعية</label>
                             <div class="relative">
-                                <select name="sub_area_id" x-model="subAreaId" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="sub_area_id" x-model="subAreaId"
+                                        class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                     <option value="">اختر الحي...</option>
                                     <template x-for="area in subAreas" :key="area.id">
                                         <option :value="area.id" x-text="area.name" :selected="area.id == subAreaId"></option>
                                     </template>
                                 </select>
                                 <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
                             </div>
                         </div>
@@ -200,18 +211,18 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف الرئيسي <span class="text-red-500">*</span></label>
                             <div class="relative">
-                                <select name="category_id" x-model="categoryId" required class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                                <select name="category_id" id="field_category_id" x-model="categoryId" @change="loadSubcategories()" required
+                                        class="w-full rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer {{ $errors->has('category_id') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}">
                                     <option value="">اختر التصنيف...</option>
                                     <template x-for="category in allCategories" :key="category.id">
-                                        <option :value="category.id" x-text="category.name"></option>
+                                        <option :value="category.id" x-text="category.name" :selected="category.id == categoryId"></option>
                                     </template>
                                 </select>
                                 <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </div>
                             </div>
+                            @error('category_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
 
@@ -219,16 +230,15 @@
                     <div x-show="subcategories.length > 0">
                         <label class="block text-sm font-bold text-gray-700 mb-2">التصنيف الفرعي</label>
                         <div class="relative">
-                            <select name="subcategory_id" class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
+                            <select name="subcategory_id" x-model="subcategoryId"
+                                    class="w-full border-gray-300 rounded-lg py-3 pl-4 pr-10 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white appearance-none cursor-pointer">
                                 <option value="">اختر التصنيف الفرعي...</option>
                                 <template x-for="subcategory in subcategories" :key="subcategory.id">
-                                    <option :value="subcategory.id" x-text="subcategory.name" :selected="subcategory.id == {{ $business->category_id }}"></option>
+                                    <option :value="subcategory.id" x-text="subcategory.name" :selected="subcategory.id == subcategoryId"></option>
                                 </template>
                             </select>
                             <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
                     </div>
@@ -236,13 +246,18 @@
                     <!-- Detailed Address -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">العنوان التفصيلي <span class="text-red-500">*</span></label>
-                        <input type="text" name="address" value="{{ $business->address ?? '' }}" required class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="الشارع، المبنى، الطابق، بالقرب من...">
+                        <input type="text" name="address" id="field_address" value="{{ old('address', $business->address ?? '') }}" required
+                               class="w-full rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800 {{ $errors->has('address') ? 'border-red-400 bg-red-50' : 'border-gray-300' }}"
+                               placeholder="الشارع، المبنى، الطابق، بالقرب من...">
+                        @error('address')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
 
                     <!-- Google Maps Link -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">رابط خرائط غوغل</label>
-                        <input type="url" name="google_maps_link" dir="ltr" value="{{ $business->google_maps_link ?? '' }}" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://maps.google.com/...">
+                        <input type="url" name="google_maps_link" dir="ltr" value="{{ old('google_maps_link', $business->google_maps_link ?? '') }}"
+                               class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800"
+                               placeholder="https://maps.google.com/...">
                         <p class="text-xs text-gray-400 mt-2">انسخ رابط الموقع من خرائط غوغل والصقه هنا</p>
                     </div>
                 </div>
@@ -328,7 +343,6 @@
                             }
                         </script>
                     </div>
-
                 </div>
             </div>
 
@@ -347,11 +361,12 @@
                 </div>
                 <div class="p-6 space-y-6" data-storage-url="{{ asset('storage/') }}">
                     <input type="hidden" name="images_to_delete" id="imagesToDelete" value="">
-                    
+
                     <!-- Logo -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">صورة شعار المنشأة</label>
-                        <input type="file" name="logo" accept="image/*" id="logoInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-green file:text-white hover:file:opacity-90">
+                        <input type="file" name="logo" accept="image/*" id="logoInput"
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-green file:text-white hover:file:opacity-90">
                         <div id="logoPreview" class="mt-4 relative hidden w-32 h-32">
                             <img src="" alt="Logo Preview" class="w-full h-full object-cover rounded-xl border-2 border-gray-200">
                             <button type="button" onclick="removeLogo()" class="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm">×</button>
@@ -367,8 +382,9 @@
                     <!-- Additional Images -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">صور إضافية للمنشأة</label>
-                        <input type="file" name="images[]" accept="image/*" multiple id="imagesInput" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-                        <p class="text-xs text-gray-400 mt-2">يمكنك اختيار عدة صور - الحد الأقصى 16 صور، كل صورة بحد أقصى 2 ميغابايت</p>
+                        <input type="file" name="images[]" accept="image/*" multiple id="imagesInput"
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        <p class="text-xs text-gray-400 mt-2">يمكنك اختيار عدة صور - الحد الأقصى 16 صور</p>
                         <div id="imagePreviews" class="mt-4 grid grid-cols-4 gap-3">
                             @if($business->images && count($business->images) > 0)
                                 @foreach($business->images as $index => $image)
@@ -383,7 +399,7 @@
                 </div>
             </div>
 
-            <!-- Section 5: Social Media -->
+            <!-- Section 6: Social Media -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
                     <h2 class="font-bold text-gray-800 flex items-center gap-2">
@@ -394,15 +410,17 @@
                     </h2>
                 </div>
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Facebook -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">فيسبوك</label>
-                        <input type="url" name="facebook" value="{{ $business->social_links['facebook'] ?? '' }}" dir="ltr" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://facebook.com/...">
+                        <input type="url" name="facebook" value="{{ old('facebook', $business->social_links['facebook'] ?? '') }}" dir="ltr"
+                               class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800"
+                               placeholder="https://facebook.com/...">
                     </div>
-                    <!-- Instagram -->
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">إنستغرام</label>
-                        <input type="url" name="instagram" value="{{ $business->social_links['instagram'] ?? '' }}" dir="ltr" class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800" placeholder="https://instagram.com/...">
+                        <input type="url" name="instagram" value="{{ old('instagram', $business->social_links['instagram'] ?? '') }}" dir="ltr"
+                               class="w-full border-gray-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-brand-green focus:border-brand-green bg-white text-gray-800"
+                               placeholder="https://instagram.com/...">
                     </div>
                 </div>
             </div>
@@ -421,128 +439,125 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const logoInput = document.getElementById('logoInput');
-        if (logoInput) {
-            logoInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const preview = document.getElementById('logoPreview');
-                    if (preview) {
-                        const img = preview.querySelector('img');
-                        if (img) img.src = URL.createObjectURL(file);
-                        preview.classList.remove('hidden');
-                    }
-                    const existing = document.getElementById('existingLogo');
-                    if (existing) existing.remove();
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Auto-scroll to first error field ──────────────────────────────────────
+    @if($errors->any())
+        const firstErrorField = document.querySelector('.border-red-400');
+        if (firstErrorField) {
+            firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstErrorField.focus();
+        } else {
+            const summary = document.getElementById('errorSummary');
+            if (summary) summary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    @endif
+
+    // ── Logo handling ─────────────────────────────────────────────────────────
+    const logoInput = document.getElementById('logoInput');
+    if (logoInput) {
+        logoInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const preview = document.getElementById('logoPreview');
+                if (preview) {
+                    preview.querySelector('img').src = URL.createObjectURL(file);
+                    preview.classList.remove('hidden');
+                }
+                const existing = document.getElementById('existingLogo');
+                if (existing) existing.remove();
+            }
+        });
+    }
+
+    window.removeLogo = function () {
+        const preview = document.getElementById('logoPreview');
+        const input = document.getElementById('logoInput');
+        if (preview) preview.classList.add('hidden');
+        if (input) input.value = '';
+    };
+
+    window.deleteExistingLogo = function () {
+        const existing = document.getElementById('existingLogo');
+        if (existing) existing.remove();
+    };
+
+    // ── Additional images handling ────────────────────────────────────────────
+    const imagesInput = document.getElementById('imagesInput');
+    let selectedImages = [];
+
+    function updateImagesInputFiles() {
+        try {
+            const dt = new DataTransfer();
+            selectedImages.forEach(f => dt.items.add(f));
+            imagesInput.files = dt.files;
+        } catch (err) {
+            console.debug('DataTransfer not available', err);
+        }
+    }
+
+    function renderImagePreviews() {
+        const container = document.getElementById('imagePreviews');
+        if (!container) return;
+        Array.from(container.querySelectorAll('.new-image')).forEach(n => n.remove());
+        selectedImages.forEach((file, idx) => {
+            const div = document.createElement('div');
+            div.className = 'relative group new-image';
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm';
+            btn.textContent = '×';
+            btn.onclick = function () { selectedImages.splice(idx, 1); updateImagesInputFiles(); renderImagePreviews(); };
+            div.appendChild(img);
+            div.appendChild(btn);
+            container.appendChild(div);
+        });
+    }
+
+    if (imagesInput) {
+        imagesInput.addEventListener('change', function (e) {
+            selectedImages = selectedImages.concat(Array.from(e.target.files || []));
+            if (selectedImages.length > 16) selectedImages = selectedImages.slice(0, 16);
+            updateImagesInputFiles();
+            renderImagePreviews();
+        });
+
+        const form = document.getElementById('editForm');
+        if (form) {
+            form.addEventListener('submit', async function (evt) {
+                evt.preventDefault();
+                const fd = new FormData(form);
+                fd.delete('images');
+                fd.delete('images[]');
+                selectedImages.forEach(f => fd.append('images[]', f));
+                try {
+                    const resp = await fetch(form.action, { method: form.getAttribute('method') || 'POST', body: fd, credentials: 'same-origin' });
+                    if (resp.redirected) { window.location = resp.url; return; }
+                    const html = await resp.text();
+                    document.open(); document.write(html); document.close();
+                } catch (err) {
+                    console.error(err);
+                    alert('حدث خطأ أثناء الإرسال. حاول مرة أخرى.');
                 }
             });
         }
+    }
 
-        window.removeLogo = function() {
-            const preview = document.getElementById('logoPreview');
-            const input = document.getElementById('logoInput');
-            if (preview) preview.classList.add('hidden');
-            if (input) input.value = '';
-        };
-
-        window.deleteExistingLogo = function() {
-            const existing = document.getElementById('existingLogo');
-            if (existing) existing.remove();
-        };
-
-        const imagesInput = document.getElementById('imagesInput');
-        let selectedImages = [];
-
-        function updateImagesInputFiles() {
-            try {
-                const dt = new DataTransfer();
-                selectedImages.forEach(f => dt.items.add(f));
-                imagesInput.files = dt.files;
-            } catch (err) {
-                console.debug('DataTransfer not available', err);
-            }
+    window.deleteExistingImage = function (button) {
+        const container = button.parentElement;
+        if (!container) return;
+        const imagePath = container.dataset.path;
+        const imagesToDelete = document.getElementById('imagesToDelete');
+        if (imagesToDelete) {
+            const current = imagesToDelete.value ? JSON.parse(imagesToDelete.value) : [];
+            current.push(imagePath);
+            imagesToDelete.value = JSON.stringify(current);
         }
-
-        function renderImagePreviews() {
-            const container = document.getElementById('imagePreviews');
-            if (!container) return;
-            // Remove only new-image previews; keep existing-image elements as they are managed separately
-            // Clear new-image nodes first
-            Array.from(container.querySelectorAll('.new-image')).forEach(n => n.remove());
-            selectedImages.forEach((file, idx) => {
-                const div = document.createElement('div');
-                div.className = 'relative group new-image';
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 group-hover:border-brand-green transition';
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition text-sm';
-                btn.textContent = '×';
-                btn.onclick = function() { removeSelectedImage(idx); };
-                div.appendChild(img);
-                div.appendChild(btn);
-                container.appendChild(div);
-            });
-        }
-
-        function removeSelectedImage(index) {
-            if (index < 0 || index >= selectedImages.length) return;
-            selectedImages.splice(index, 1);
-            updateImagesInputFiles();
-            renderImagePreviews();
-        }
-
-        if (imagesInput) {
-            imagesInput.addEventListener('change', function(e) {
-                const files = Array.from(e.target.files || []);
-                selectedImages = selectedImages.concat(files);
-                if (selectedImages.length > 16) selectedImages = selectedImages.slice(0, 16);
-                updateImagesInputFiles();
-                renderImagePreviews();
-            });
-
-            // Intercept form submit to ensure only selectedImages are sent as files
-            const form = imagesInput.closest('form');
-            if (form) {
-                form.addEventListener('submit', async function(evt) {
-                    evt.preventDefault();
-                    const fd = new FormData(form);
-                    // remove any file fields
-                    fd.delete('images');
-                    fd.delete('images[]');
-                    // append selectedImages
-                    selectedImages.forEach(f => fd.append('images[]', f));
-
-                    try {
-                        const resp = await fetch(form.action, { method: form.method || 'POST', body: fd, credentials: 'same-origin' });
-                        if (resp.redirected) {
-                            window.location = resp.url;
-                            return;
-                        }
-                        const html = await resp.text();
-                        document.open(); document.write(html); document.close();
-                    } catch (err) {
-                        console.error(err);
-                        alert('حدث خطأ أثناء الإرسال. حاول مرة أخرى.');
-                    }
-                });
-            }
-        }
-
-        window.deleteExistingImage = function(button) {
-            const container = button.parentElement;
-            if (!container) return;
-            const imagePath = container.dataset.path;
-            const imagesToDelete = document.getElementById('imagesToDelete');
-            if (imagesToDelete) {
-                const current = imagesToDelete.value ? JSON.parse(imagesToDelete.value) : [];
-                current.push(imagePath);
-                imagesToDelete.value = JSON.stringify(current);
-            }
-            container.remove();
-        };
-    });
+        container.remove();
+    };
+});
 </script>
 @endsection

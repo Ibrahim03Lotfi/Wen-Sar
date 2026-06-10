@@ -41,8 +41,8 @@ class BusinessController extends Controller
         $businesses = $query->latest()->paginate(20);
         $categories = Category::all();
         $districts = District::all();
-
-        return view('manager.businesses.index', compact('businesses', 'categories', 'districts'));
+        $featuredCount = Business::where('is_featured', true)->count();
+        return view('manager.businesses.index', compact('businesses', 'categories', 'districts', 'featuredCount'));
     }
 
     public function show(Business $business)
@@ -120,6 +120,28 @@ class BusinessController extends Controller
 
         return redirect()->route('manager.businesses.index')->with('success', __('Business updated successfully.'));
     }
+    public function toggleFeatured(Business $business)
+{
+    if ($business->is_featured) {
+        $business->update([
+            'is_featured'   => false,
+            'featured_rank' => null,
+        ]);
+        $message = __('Business removed from featured places.');
+    } else {
+        // Auto-assign the next available rank
+        $maxRank = Business::where('is_featured', true)->max('featured_rank') ?? 0;
+        $business->update([
+            'is_featured'   => true,
+            'featured_rank' => $maxRank + 1,
+        ]);
+        $message = __('Business added to featured places.');
+    }
+
+    return back()->with('success', $message);
+}
+
+
 
     public function destroy(Business $business)
     {
@@ -172,9 +194,9 @@ class BusinessController extends Controller
                 'opening_time' => 'nullable|date_format:H:i',
                 'closing_time' => 'nullable|date_format:H:i',
                 'address' => 'nullable|string|max:500',
-                'logo' => 'nullable|image|max:2048',
+                'logo' => 'nullable|image',
                 'images' => 'nullable|array|max:16',
-                'images.*' => 'nullable|image|max:2048',
+                'images.*' => 'nullable|image',
                 'facebook' => 'nullable|url|max:255',
                 'instagram' => 'nullable|url|max:255',
             ]);
@@ -211,18 +233,16 @@ class BusinessController extends Controller
             $validated['landline'] = $landlines[0] ?? null;
             unset($validated['landline_suffix']);
 
-            // Handle logo upload
+            // Handle logo upload with compression
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('logos', 'public');
-                $validated['logo'] = $logoPath;
+                $validated['logo'] = $this->compressImage($request->file('logo'), 'logos');
             }
 
-            // Handle images upload
+            // Handle images upload with compression
             if ($request->hasFile('images')) {
                 $imagePaths = [];
                 foreach ($request->file('images') as $image) {
-                    $path = $image->store('business_images', 'public');
-                    $imagePaths[] = $path;
+                    $imagePaths[] = $this->compressImage($image, 'business_images');
                 }
                 $validated['images'] = $imagePaths;
             }
@@ -254,5 +274,80 @@ class BusinessController extends Controller
         } catch (\Exception $e) {
             return back()->withInput()->with('error', __('Error adding business: ') . $e->getMessage());
         }
+    }
+
+    /**
+     * Compress and save an uploaded image using GD.
+     * - Resizes to max 1920px on the longest side (preserves aspect ratio)
+     * - Saves as JPEG at quality 75
+     * - Returns the storage-relative path (e.g. "logos/abc123.jpg")
+     */
+    private function compressImage(\Illuminate\Http\UploadedFile $file, string $directory): string
+    {
+        $filename = $directory . '/' . uniqid() . '_' . time() . '.jpg';
+        $fullPath = Storage::disk('public')->path($filename);
+
+        $mime = $file->getMimeType();
+        $sourcePath = $file->getRealPath();
+
+        // Create GD image resource from uploaded file
+        if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+            $source = imagecreatefromjpeg($sourcePath);
+        } elseif ($mime === 'image/png') {
+            $source = imagecreatefrompng($sourcePath);
+        } elseif ($mime === 'image/webp') {
+            $source = imagecreatefromwebp($sourcePath);
+        } elseif ($mime === 'image/gif') {
+            $source = imagecreatefromgif($sourcePath);
+        } else {
+            // Fallback: try jpeg
+            $source = @imagecreatefromjpeg($sourcePath);
+            if (!$source) {
+                // If GD can't handle it, store as-is
+                $file->storeAs($directory, basename($filename), 'public');
+                return $filename;
+            }
+        }
+
+        if (!$source) {
+            // GD failed, store original
+            $file->storeAs($directory, basename($filename), 'public');
+            return $filename;
+        }
+
+        $origWidth  = imagesx($source);
+        $origHeight = imagesy($source);
+        $maxDimension = 1920;
+
+        // Calculate new dimensions keeping aspect ratio
+        if ($origWidth > $maxDimension || $origHeight > $maxDimension) {
+            if ($origWidth >= $origHeight) {
+                $newWidth  = $maxDimension;
+                $newHeight = (int) round($origHeight * ($maxDimension / $origWidth));
+            } else {
+                $newHeight = $maxDimension;
+                $newWidth  = (int) round($origWidth * ($maxDimension / $origHeight));
+            }
+        } else {
+            $newWidth  = $origWidth;
+            $newHeight = $origHeight;
+        }
+
+        // Create resized canvas
+        $canvas = imagecreatetruecolor($newWidth, $newHeight);
+
+        // Fill white background (handles PNG/GIF transparency before JPEG conversion)
+        $white = imagecolorallocate($canvas, 255, 255, 255);
+        imagefill($canvas, 0, 0, $white);
+
+        imagecopyresampled($canvas, $source, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+        // Save as JPEG at quality 75
+        imagejpeg($canvas, $fullPath, 75);
+
+        imagedestroy($source);
+        imagedestroy($canvas);
+
+        return $filename;
     }
 }
